@@ -1,6 +1,7 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from models import Coins
 from database import db
+import uuid 
 
 app = Flask(__name__)
 
@@ -22,3 +23,19 @@ def _db_close(exc):
 def get_all_coins():
     coins = [coin for coin in Coins.select().dicts()]
     return jsonify(coins)
+
+@app.post('/coins')
+def create_new_coin():
+    data = request.get_json()
+
+    if not data or 'name' not in data:
+        return jsonify({'error': 'Invalid input'}), 400
+
+    new_coin = Coins.create(
+        id=uuid.uuid4(),
+        name=data['name'],
+    )
+    return jsonify({
+        'id': new_coin.id,
+        'name': new_coin.name,
+    }), 201
