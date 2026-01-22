@@ -39,3 +39,13 @@ def create_new_coin():
         'id': new_coin.id,
         'name': new_coin.name,
     }), 201
+
+@app.delete('/coins/<id>')
+def delete_a_coin(id):
+
+    Coins.delete_by_id(id)
+
+    return jsonify({
+        'message': f"Coin with ID = {id} has been deleted",
+    }), 200
+

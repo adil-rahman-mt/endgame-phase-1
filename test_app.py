@@ -40,3 +40,9 @@ def test_create_new_coin(client):
     
     assert response.status_code == 201
     assert response.get_json() == mock_coin
+
+def test_delete_a_coin(client):
+    post_response = client.post("/coins", json={"name": "New coin"})
+    id_of_new_coin = post_response.get_json()["id"]
+    delete_response = client.delete(f"/coins/{id_of_new_coin}")
+    assert delete_response.get_json()["message"] == f"Coin with ID = {id_of_new_coin} has been deleted"
