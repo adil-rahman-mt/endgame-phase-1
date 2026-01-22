@@ -28,9 +28,15 @@ def test_get_all_coins(client):
     assert response.get_json() == mock_coins
 
 def test_create_new_coin(client):
-    response = client.post("/coins", json={
-        "name": "Automate",
-    })
+    mock_id = uuid.uuid4()
+    mock_coin = {"id": str(mock_id) , "name": "Automate"}
+
+    mock_model = MagicMock()
+    mock_model.id = mock_id
+    mock_model.name = "Automate"
+
+    with patch("app.Coins.create", return_value=mock_model):
+        response = client.post("/coins", json={"name": "Automate"})
+    
     assert response.status_code == 201
-    print(response.get_json())
-    assert len(response.get_json()) == 2
+    assert response.get_json() == mock_coin
