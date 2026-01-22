@@ -22,7 +22,15 @@ def _db_close(exc):
 @app.get('/coins')
 def get_all_coins():
     coins = [coin for coin in Coins.select().dicts()]
-    return jsonify(coins)
+    return jsonify(coins), 200
+
+@app.get('/coins/<id>')
+def get_coin_by_id(id):
+    coin = Coins.get_by_id(id)
+    return jsonify({
+        'id': coin.id,
+        'name': coin.name
+    }), 200
 
 @app.post('/coins')
 def create_new_coin():

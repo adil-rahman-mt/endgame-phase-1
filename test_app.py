@@ -27,6 +27,16 @@ def test_get_all_coins(client):
     assert response.status_code == 200
     assert response.get_json() == mock_coins
 
+def test_get_coin_by_id(client):
+    post_response = client.post("/coins", json={"name": "New coin"})
+    id_of_new_coin = post_response.get_json()["id"]
+    get_response = client.get(f"/coins/{id_of_new_coin}")
+    client.delete(f"/coins/{id_of_new_coin}")
+    assert get_response.get_json() == {
+        "id": id_of_new_coin,
+        "name": "New coin",
+    }
+
 def test_create_new_coin(client):
     mock_id = uuid.uuid4()
     mock_coin = {"id": str(mock_id) , "name": "Automate"}
