@@ -8,6 +8,9 @@ def client():
     with app.test_client() as c:
         yield c
 
+valid_uuid = '00000000-0000-4000-a000-000000000000'
+invalid_uuid = '1'
+
 def test_home_route(client):
     response = client.get("/")
     assert response.status_code == 200
@@ -38,7 +41,6 @@ def test_get_coin_by_id(client):
     }
 
 def test_get_non_existent_coin(client):
-    valid_uuid = '00000000-0000-4000-a000-000000000000'
     response = client.get(f"/coins/{valid_uuid}")
     assert response.get_json() == {
         'error': "Database error",
@@ -46,7 +48,6 @@ def test_get_non_existent_coin(client):
     }
 
 def test_get_coin_with_invalid_id(client):
-    invalid_uuid = '1'
     response = client.get(f"/coins/{invalid_uuid}")
     assert response.get_json() == {
         'error': "Input syntax error",
@@ -88,7 +89,6 @@ def test_delete_existing_coin(client):
     }
 
 def test_delete_non_existing_coin(client):
-    valid_uuid = '00000000-0000-4000-a000-000000000000'
     response = client.delete(f"/coins/{valid_uuid}")
     assert response.get_json() == {
         'error': "Database error",
@@ -96,7 +96,6 @@ def test_delete_non_existing_coin(client):
     }
     
 def test_delete_coin_with_invalid_id(client):
-    invalid_uuid = '1'
     response = client.delete(f"/coins/{invalid_uuid}")
     assert response.get_json() == {
         'error': "Input syntax error",
@@ -114,7 +113,6 @@ def test_update_existing_coin(client):
     }
 
 def test_update_non_existing_coin(client):
-    valid_uuid = '00000000-0000-4000-a000-000000000000'
     response = client.patch(f"/coins/{valid_uuid}", json={"name": "Updated coin"})
     assert response.get_json() == {
         'error': "Database error",
@@ -122,7 +120,6 @@ def test_update_non_existing_coin(client):
     }
 
 def test_update_coin_with_invalid_id(client):
-    invalid_uuid = '1'
     response = client.patch(f"/coins/{invalid_uuid}", json={"name": "Updated coin"})
     assert response.get_json() == {
         'error': "Input syntax error",
