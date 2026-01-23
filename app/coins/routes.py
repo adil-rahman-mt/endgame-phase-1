@@ -48,7 +48,7 @@ def create_new_coin():
     except peewee.IntegrityError:
         return jsonify({
             'error': "Integrity error",
-            'message': f"{data["name"]} already exists"
+            'message': f"{data['name']} already exists"
         }), 400
 
 @coins_bp.delete('/<id>')
