@@ -50,15 +50,21 @@ def create_new_coin():
 
     if not data or 'name' not in data:
         return jsonify({'error': 'Invalid input'}), 400
-
-    new_coin = Coins.create(
-        id=uuid.uuid4(),
-        name=data['name'],
-    )
-    return jsonify({
-        'id': new_coin.id,
-        'name': new_coin.name,
-    }), 201
+    
+    try:
+        new_coin = Coins.create(
+            id=uuid.uuid4(),
+            name=data['name'],
+        )
+        return jsonify({
+            'id': new_coin.id,
+            'name': new_coin.name,
+        }), 201
+    except peewee.IntegrityError:
+        return jsonify({
+            'error': "Integrity error",
+            'message': f"{data["name"]} already exists"
+        }), 400
 
 @app.delete('/coins/<id>')
 def delete_a_coin(id):

@@ -67,6 +67,17 @@ def test_create_new_coin(client):
     assert response.status_code == 201
     assert response.get_json() == mock_coin
 
+def test_create_duplicate_coin(client):
+    response_1 = client.post("/coins", json={"name": "Automate"})
+    id_of_new_coin = response_1.get_json()["id"]
+    duplicate_coin_response = client.post("/coins", json={"name": "Automate"})
+    assert duplicate_coin_response.status_code == 400
+    assert duplicate_coin_response.get_json() == {
+            'error': "Integrity error",
+            'message': "Automate already exists"
+        }
+    client.delete(f"/coins/{id_of_new_coin}")
+
 def test_delete_a_coin(client):
     post_response = client.post("/coins", json={"name": "New coin"})
     id_of_new_coin = post_response.get_json()["id"]
