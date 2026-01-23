@@ -1,5 +1,5 @@
 from peewee import *
-from database import db
+from app.database import db
 
 class Coins(Model):
     id = UUIDField(primary_key=True)

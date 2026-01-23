@@ -1,31 +1,16 @@
-from flask import Flask, jsonify, request
-from models import Coins
-from database import db
+from flask import Blueprint, jsonify, request
+from app.coins.models import Coins
 import uuid 
 import peewee
 
-app = Flask(__name__)
+coins_bp = Blueprint("coins", __name__)
 
-@app.route('/')
-def home():
-    return 'Welcome to Endgame: Phase 1'
-
-@app.before_request
-def _db_connect():
-    if db.is_closed():
-        db.connect()
-
-@app.teardown_request
-def _db_close(exc):
-    if not db.is_closed():
-        db.close()
-
-@app.get('/coins')
+@coins_bp.get("")
 def get_all_coins():
     coins = [coin for coin in Coins.select().dicts()]
     return jsonify(coins), 200
 
-@app.get('/coins/<id>')
+@coins_bp.get('/<id>')
 def get_coin_by_id(id):
     try:
         coin = Coins.get_by_id(id)
@@ -44,7 +29,7 @@ def get_coin_by_id(id):
             'message': "Invalid input for type uuid"
         }), 400
 
-@app.post('/coins')
+@coins_bp.post('')
 def create_new_coin():
     data = request.get_json()
 
@@ -66,7 +51,7 @@ def create_new_coin():
             'message': f"{data["name"]} already exists"
         }), 400
 
-@app.delete('/coins/<id>')
+@coins_bp.delete('/<id>')
 def delete_a_coin(id):
     try:
         coin_to_delete = Coins.get(Coins.id == f"{id}")
@@ -86,7 +71,7 @@ def delete_a_coin(id):
             'message': "Invalid input for type uuid"
         }), 400
 
-@app.patch('/coins/<id>')
+@coins_bp.patch('/<id>')
 def update_a_coin(id):
     try:
         data = request.get_json()

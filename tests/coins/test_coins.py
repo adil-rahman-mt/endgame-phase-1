@@ -1,19 +1,8 @@
-import pytest
-from app import app
 from unittest.mock import MagicMock, patch
 import uuid 
 
-@pytest.fixture
-def client():
-    with app.test_client() as c:
-        yield c
-
 valid_uuid = '00000000-0000-4000-a000-000000000000'
 invalid_uuid = '1'
-
-def test_home_route(client):
-    response = client.get("/")
-    assert response.status_code == 200
 
 def test_get_all_coins(client):
     mock_id = uuid.uuid4()
@@ -24,20 +13,20 @@ def test_get_all_coins(client):
     mock_query = MagicMock()
     mock_query.dicts.return_value = mock_coins
 
-    with patch("app.Coins.select", return_value=mock_query):
+    with patch("app.coins.models.Coins.select", return_value=mock_query):
         response = client.get("/coins")
     
     assert response.status_code == 200
     assert response.get_json() == mock_coins
 
 def test_get_coin_by_id(client):
-    post_response = client.post("/coins", json={"name": "New coin"})
+    post_response = client.post("/coins", json={"name": "Test coin 1"})
     id_of_new_coin = post_response.get_json()["id"]
     get_response = client.get(f"/coins/{id_of_new_coin}")
     client.delete(f"/coins/{id_of_new_coin}")
     assert get_response.get_json() == {
         "id": id_of_new_coin,
-        "name": "New coin",
+        "name": "Test coin 1",
     }
 
 def test_get_non_existent_coin(client):
@@ -62,25 +51,25 @@ def test_create_new_coin(client):
     mock_model.id = mock_id
     mock_model.name = "Automate"
 
-    with patch("app.Coins.create", return_value=mock_model):
+    with patch("app.coins.models.Coins.create", return_value=mock_model):
         response = client.post("/coins", json={"name": "Automate"})
     
     assert response.status_code == 201
     assert response.get_json() == mock_coin
 
 def test_create_duplicate_coin(client):
-    response_1 = client.post("/coins", json={"name": "Automate"})
+    response_1 = client.post("/coins", json={"name": "Test coin 1"})
     id_of_new_coin = response_1.get_json()["id"]
-    duplicate_coin_response = client.post("/coins", json={"name": "Automate"})
+    duplicate_coin_response = client.post("/coins", json={"name": "Test coin 1"})
+    client.delete(f"/coins/{id_of_new_coin}")
     assert duplicate_coin_response.status_code == 400
     assert duplicate_coin_response.get_json() == {
             'error': "Integrity error",
-            'message': "Automate already exists"
+            'message': "Test coin 1 already exists"
         }
-    client.delete(f"/coins/{id_of_new_coin}")
 
 def test_delete_existing_coin(client):
-    post_response = client.post("/coins", json={"name": "New coin"})
+    post_response = client.post("/coins", json={"name": "Test coin 1"})
     id_of_new_coin = post_response.get_json()["id"]
     delete_response = client.delete(f"/coins/{id_of_new_coin}")
     assert delete_response.get_json() == {
