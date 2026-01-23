@@ -41,7 +41,7 @@ def get_coin_by_id(id):
     except peewee.DataError:
         return jsonify({
             'error': "Input syntax error",
-            'message': "Invalid input"
+            'message': "Invalid input for type uuid"
         }), 400
 
 @app.post('/coins')
@@ -49,7 +49,7 @@ def create_new_coin():
     data = request.get_json()
 
     if not data or 'name' not in data:
-        return jsonify({'error': 'Invalid input'}), 400
+        return jsonify({'error': 'Invalid json input'}), 400
     
     try:
         new_coin = Coins.create(
@@ -83,6 +83,6 @@ def delete_a_coin(id):
     except peewee.DataError:
         return jsonify({
             'error': "Input syntax error",
-            'message': "Invalid input"
+            'message': "Invalid input for type uuid"
         }), 400
 

@@ -50,7 +50,7 @@ def test_get_coin_with_invalid_id(client):
     response = client.get(f"/coins/{invalid_uuid}")
     assert response.get_json() == {
         'error': "Input syntax error",
-        'message': "Invalid input"
+        'message': "Invalid input for type uuid"
     }
 
 def test_create_new_coin(client):
@@ -100,6 +100,6 @@ def test_delete_coin_with_invalid_id(client):
     response = client.delete(f"/coins/{invalid_uuid}")
     assert response.get_json() == {
         'error': "Input syntax error",
-        'message': "Invalid input"
+        'message': "Invalid input for type uuid"
     }
     
