@@ -102,4 +102,29 @@ def test_delete_coin_with_invalid_id(client):
         'error': "Input syntax error",
         'message': "Invalid input for type uuid"
     }
-    
+
+def test_update_existing_coin(client):
+    post_response = client.post("/coins", json={"name": "New coin"})
+    id_of_new_coin = post_response.get_json()["id"]
+    update_response = client.patch(f"/coins/{id_of_new_coin}", json={"name": "Updated coin"})
+    client.delete(f"coins/{id_of_new_coin}")
+    assert update_response.get_json() == {
+        "id": id_of_new_coin,
+        "name": "Updated coin"
+    }
+
+def test_update_non_existing_coin(client):
+    valid_uuid = '00000000-0000-4000-a000-000000000000'
+    response = client.patch(f"/coins/{valid_uuid}", json={"name": "Updated coin"})
+    assert response.get_json() == {
+        'error': "Database error",
+        'message': f"Coin with ID = {valid_uuid} does not exist"
+    }
+
+def test_update_coin_with_invalid_id(client):
+    invalid_uuid = '1'
+    response = client.patch(f"/coins/{invalid_uuid}", json={"name": "Updated coin"})
+    assert response.get_json() == {
+        'error': "Input syntax error",
+        'message': "Invalid input for type uuid"
+    }

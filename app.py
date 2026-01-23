@@ -86,3 +86,25 @@ def delete_a_coin(id):
             'message': "Invalid input for type uuid"
         }), 400
 
+@app.patch('/coins/<id>')
+def update_a_coin(id):
+    try:
+        data = request.get_json()
+        coin = Coins.get(Coins.id == f"{id}")
+        coin.name = data["name"]
+        coin.save()
+        updated_coin = Coins.get(Coins.id == f"{id}")
+        return jsonify({
+            "id": updated_coin.id,
+            "name": updated_coin.name
+        }), 200
+    except peewee.DoesNotExist:
+        return jsonify({
+            'error': "Database error",
+            'message': f"Coin with ID = {id} does not exist"
+        }), 400
+    except peewee.DataError:
+        return jsonify({
+            'error': "Input syntax error",
+            'message': "Invalid input for type uuid"
+        }), 400
