@@ -78,8 +78,19 @@ def test_create_duplicate_coin(client):
         }
     client.delete(f"/coins/{id_of_new_coin}")
 
-def test_delete_a_coin(client):
+def test_delete_existing_coin(client):
     post_response = client.post("/coins", json={"name": "New coin"})
     id_of_new_coin = post_response.get_json()["id"]
     delete_response = client.delete(f"/coins/{id_of_new_coin}")
-    assert delete_response.get_json()["message"] == f"Coin with ID = {id_of_new_coin} has been deleted"
+    assert delete_response.get_json() == {
+        "status": "Success",
+        "message": f"Coin with ID = {id_of_new_coin} has been deleted",
+    }
+
+def test_delete_non_existing_coin(client):
+    valid_uuid = '00000000-0000-4000-a000-000000000000'
+    response = client.delete(f"/coins/{valid_uuid}")
+    assert response.get_json() == {
+        'error': "Database error",
+        'message': f"Coin with ID = {valid_uuid} does not exist"
+    }

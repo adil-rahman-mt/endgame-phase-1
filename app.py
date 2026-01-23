@@ -68,10 +68,16 @@ def create_new_coin():
 
 @app.delete('/coins/<id>')
 def delete_a_coin(id):
-
-    Coins.delete_by_id(id)
-
-    return jsonify({
-        'message': f"Coin with ID = {id} has been deleted",
-    }), 200
+    try:
+        coin_to_delete = Coins.get(Coins.id == f"{id}")
+        coin_to_delete.delete_instance()
+        return jsonify({
+            'status': "Success",
+            'message': f"Coin with ID = {id} has been deleted",
+        }), 200
+    except Coins.DoesNotExist:
+        return jsonify({
+            'error': "Database error",
+            'message': f"Coin with ID = {id} does not exist"
+        }), 400
 
