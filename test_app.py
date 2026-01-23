@@ -37,6 +37,22 @@ def test_get_coin_by_id(client):
         "name": "New coin",
     }
 
+def test_get_non_existent_coin(client):
+    valid_uuid = '00000000-0000-4000-a000-000000000000'
+    response = client.get(f"/coins/{valid_uuid}")
+    assert response.get_json() == {
+        'error': "Database error",
+        'message': f"Coin with ID = {valid_uuid} does not exist"
+    }
+
+def test_get_coin_with_invalid_id(client):
+    invalid_uuid = '1'
+    response = client.get(f"/coins/{invalid_uuid}")
+    assert response.get_json() == {
+        'error': "Input syntax error",
+        'message': "Invalid input"
+    }
+
 def test_create_new_coin(client):
     mock_id = uuid.uuid4()
     mock_coin = {"id": str(mock_id) , "name": "Automate"}

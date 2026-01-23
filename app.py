@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from models import Coins
 from database import db
 import uuid 
+import peewee
 
 app = Flask(__name__)
 
@@ -26,11 +27,22 @@ def get_all_coins():
 
 @app.get('/coins/<id>')
 def get_coin_by_id(id):
-    coin = Coins.get_by_id(id)
-    return jsonify({
-        'id': coin.id,
-        'name': coin.name
-    }), 200
+    try:
+        coin = Coins.get_by_id(id)
+        return jsonify({
+            'id': coin.id,
+            'name': coin.name
+        }), 200
+    except peewee.DoesNotExist:
+        return jsonify({
+            'error': "Database error",
+            'message': f"Coin with ID = {id} does not exist"
+        }), 400
+    except peewee.DataError:
+        return jsonify({
+            'error': "Input syntax error",
+            'message': "Invalid input"
+        }), 400
 
 @app.post('/coins')
 def create_new_coin():
