@@ -75,9 +75,14 @@ def delete_a_coin(id):
             'status': "Success",
             'message': f"Coin with ID = {id} has been deleted",
         }), 200
-    except Coins.DoesNotExist:
+    except peewee.DoesNotExist:
         return jsonify({
             'error': "Database error",
             'message': f"Coin with ID = {id} does not exist"
+        }), 400
+    except peewee.DataError:
+        return jsonify({
+            'error': "Input syntax error",
+            'message': "Invalid input"
         }), 400
 

@@ -94,3 +94,12 @@ def test_delete_non_existing_coin(client):
         'error': "Database error",
         'message': f"Coin with ID = {valid_uuid} does not exist"
     }
+    
+def test_delete_coin_with_invalid_id(client):
+    invalid_uuid = '1'
+    response = client.delete(f"/coins/{invalid_uuid}")
+    assert response.get_json() == {
+        'error': "Input syntax error",
+        'message': "Invalid input"
+    }
+    
