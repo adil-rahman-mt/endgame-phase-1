@@ -25,8 +25,8 @@ def get_coin_by_id(id):
         }), 400
     except peewee.DataError:
         return jsonify({
-            'error': "Input syntax error",
-            'message': "Invalid input for type uuid"
+            'error': "Invalid ID format",
+            'message': "The provided ID must be a valid UUID"
         }), 400
 
 @coins_bp.post('')
@@ -47,7 +47,7 @@ def create_new_coin():
         }), 201
     except peewee.IntegrityError:
         return jsonify({
-            'error': "Integrity error",
+            'error': "Duplication error",
             'message': f"{data['name']} already exists"
         }), 400
 
@@ -67,8 +67,8 @@ def delete_a_coin(id):
         }), 400
     except peewee.DataError:
         return jsonify({
-            'error': "Input syntax error",
-            'message': "Invalid input for type uuid"
+            'error': "Invalid ID format",
+            'message': "The provided ID must be a valid UUID"
         }), 400
 
 @coins_bp.patch('/<id>')
@@ -90,6 +90,6 @@ def update_a_coin(id):
         }), 400
     except peewee.DataError:
         return jsonify({
-            'error': "Input syntax error",
-            'message': "Invalid input for type uuid"
+            'error': "Invalid ID format",
+            'message': "The provided ID must be a valid UUID"
         }), 400

@@ -44,8 +44,8 @@ def test_get_coin_with_invalid_id(client):
     response = client.get(f"/coins/{invalid_uuid}")
     
     assert response.get_json() == {
-        'error': "Input syntax error",
-        'message': "Invalid input for type uuid"
+        'error': "Invalid ID format",
+        'message': "The provided ID must be a valid UUID"
     }
 
 def test_create_new_coin(client):
@@ -73,7 +73,7 @@ def test_create_duplicate_coin(client):
     
     assert duplicate_coin_response.status_code == 400
     assert duplicate_coin_response.get_json() == {
-            'error': "Integrity error",
+            'error': "Duplication error",
             'message': "Test coin 1 already exists"
         }
 
@@ -99,8 +99,8 @@ def test_delete_coin_with_invalid_id(client):
     response = client.delete(f"/coins/{invalid_uuid}")
     
     assert response.get_json() == {
-        'error': "Input syntax error",
-        'message': "Invalid input for type uuid"
+        'error': "Invalid ID format",
+        'message': "The provided ID must be a valid UUID"
     }
 
 def test_update_existing_coin(client):
@@ -126,6 +126,6 @@ def test_update_coin_with_invalid_id(client):
     response = client.patch(f"/coins/{invalid_uuid}", json={"name": "Updated coin"})
     
     assert response.get_json() == {
-        'error': "Input syntax error",
-        'message': "Invalid input for type uuid"
+        'error': "Invalid ID format",
+        'message': "The provided ID must be a valid UUID"
     }
