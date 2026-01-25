@@ -116,12 +116,18 @@ def test_delete_existing_duty(client):
             "name": "Test name",
             "description": "Test description"
         })
-    id_of_new_duty = post_response.get_json()["id"]
-    delete_response = client.delete(f"/duties/{id_of_new_duty}")
+    duty_id = post_response.get_json()["id"]
+    duty_name = post_response.get_json()["name"]
+    duty_description = post_response.get_json()["description"]
+    delete_response = client.delete(f"/duties/{duty_id}")
     
     assert delete_response.get_json() == {
         "status": "Success",
-        "message": f"Duty with ID = {id_of_new_duty} has been deleted",
+        "deleted": {
+                'id': duty_id,
+                'name': duty_name,
+                'description': duty_description
+            }
     }
 
 def test_delete_non_existing_duty(client):

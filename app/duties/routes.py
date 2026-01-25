@@ -57,11 +57,15 @@ def create_new_duty():
 @duties_bp.delete('/<id>')
 def delete_a_duty(id):
     try:
-        duty_to_delete = Duties.get(Duties.id == f"{id}")
+        duty_to_delete = Duties.get_by_id(id)
         duty_to_delete.delete_instance()
         return jsonify({
             'status': "Success",
-            'message': f"Duty with ID = {id} has been deleted",
+            'deleted': {
+                'id': duty_to_delete.id,
+                'name': duty_to_delete.name,
+                'description': duty_to_delete.description,
+            },
         }), 200
     except peewee.DoesNotExist:
         return jsonify({

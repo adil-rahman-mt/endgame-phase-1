@@ -66,11 +66,16 @@ def create_new_ksb():
 @ksb_bp.delete('/<id>')
 def delete_a_ksb(id):
     try:
-        ksb_to_delete = KSB.get(KSB.id == f"{id}")
+        ksb_to_delete = KSB.get_by_id(id)
         ksb_to_delete.delete_instance()
         return jsonify({
             'status': "Success",
-            'message': f"KSB with ID = {id} has been deleted",
+            'deleted': {
+                'id': ksb_to_delete.id,
+                'type': ksb_to_delete.type,
+                'name': ksb_to_delete.name,
+                'description': ksb_to_delete.description,
+            },
         }), 200
     except peewee.DoesNotExist:
         return jsonify({

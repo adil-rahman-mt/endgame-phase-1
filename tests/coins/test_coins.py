@@ -79,12 +79,16 @@ def test_create_duplicate_coin(client):
 
 def test_delete_existing_coin(client):
     post_response = client.post("/coins", json={"name": "Test coin 1"})
-    id_of_new_coin = post_response.get_json()["id"]
-    delete_response = client.delete(f"/coins/{id_of_new_coin}")
+    coin_id = post_response.get_json()["id"]
+    coin_name = post_response.get_json()["name"]
+    delete_response = client.delete(f"/coins/{coin_id}")
     
     assert delete_response.get_json() == {
         "status": "Success",
-        "message": f"Coin with ID = {id_of_new_coin} has been deleted",
+        "deleted": {
+                'id': coin_id,
+                'name': coin_name
+            }
     }
 
 def test_delete_non_existing_coin(client):

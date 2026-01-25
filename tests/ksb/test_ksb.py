@@ -149,13 +149,21 @@ def test_delete_existing_ksb(client):
             "name": "Test name",
             "description": "Test description"
         })
-    id_of_new_ksb = post_response.get_json()["id"]
-    delete_response = client.delete(f"/ksb/{id_of_new_ksb}")
+    ksb_id = post_response.get_json()["id"]
+    ksb_type = post_response.get_json()["type"]
+    ksb_name = post_response.get_json()["name"]
+    ksb_description = post_response.get_json()["description"]
+    delete_response = client.delete(f"/ksb/{ksb_id}")
     
     assert delete_response.status_code == 200
     assert delete_response.get_json() == {
         "status": "Success",
-        "message": f"KSB with ID = {id_of_new_ksb} has been deleted",
+        "deleted": {
+                'id': ksb_id,
+                'type': ksb_type,
+                'name': ksb_name,
+                'description': ksb_description
+            }
     }
 
 def test_delete_non_existing_ksb(client):

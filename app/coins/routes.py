@@ -54,11 +54,14 @@ def create_new_coin():
 @coins_bp.delete('/<id>')
 def delete_a_coin(id):
     try:
-        coin_to_delete = Coins.get(Coins.id == f"{id}")
+        coin_to_delete = Coins.get_by_id(id)
         coin_to_delete.delete_instance()
         return jsonify({
             'status': "Success",
-            'message': f"Coin with ID = {id} has been deleted",
+            'deleted': {
+                'id': coin_to_delete.id,
+                'name': coin_to_delete.name
+            },
         }), 200
     except peewee.DoesNotExist:
         return jsonify({
