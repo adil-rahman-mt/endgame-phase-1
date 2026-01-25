@@ -51,7 +51,7 @@ def create_new_duty():
     except peewee.IntegrityError as err:
         return jsonify({
             'error': "Duplication error",
-            'message': f"A duty with {err.args[0].split(':  ')[-1][4:-2]}",
+            'message': f"A duty with {err.args[0].split(':  ')[-1][4:-17]} already exists",
         }), 400
 
 @duties_bp.delete('/<id>')

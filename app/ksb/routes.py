@@ -60,7 +60,7 @@ def create_new_ksb():
     except peewee.IntegrityError as err:
         return jsonify({
             'error': "Duplication error",
-            'message': f"A KSB with {err.args[0].split(':  ')[-1][4:-2]}",
+            'message': f"A KSB with {err.args[0].split(':  ')[-1][4:-17]} already exists",
         }), 400
 
 @ksb_bp.delete('/<id>')
