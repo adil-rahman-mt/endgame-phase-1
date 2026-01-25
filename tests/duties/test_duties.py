@@ -24,8 +24,8 @@ def test_get_all_duties(client):
 
 def test_get_duty_by_id(client):
     post_response = client.post("/duties", json={
-            "name": "Test duty 1",
-            "description": "Python"
+            "name": "Test name",
+            "description": "Test description"
         })
     id_of_new_duty = post_response.get_json()["id"]
     get_response = client.get(f"/duties/{id_of_new_duty}")
@@ -33,8 +33,8 @@ def test_get_duty_by_id(client):
     
     assert get_response.get_json() == {
         "id": id_of_new_duty,
-        "name": "Test duty 1",
-        "description": "Python"
+        "name": "Test name",
+        "description": "Test description"
     }
 
 def test_get_non_existent_duty(client):
@@ -77,44 +77,44 @@ def test_create_new_duty(client):
 
 def test_create_duty_with_duplicate_name(client):
     response_1 = client.post("/duties", json={
-            "name": "Test duty 1",
-            "description": "Python"
+            "name": "Test name",
+            "description": "Test description"
         })
     id_of_new_duty = response_1.get_json()["id"]
     duplicate_duty_response = client.post("/duties", json={
-            "name": "Test duty 1",
-            "description": "TDD"
+            "name": "Test name",
+            "description": "Test description 2"
         })
     client.delete(f"/duties/{id_of_new_duty}")
     
     assert duplicate_duty_response.status_code == 400
     assert duplicate_duty_response.get_json() == {
             'error': "Duplication error",
-            'message': "A duty with (name)=(Test duty 1) already exists"
+            'message': "A duty with (name)=(Test name) already exists"
         }
 
 def test_create_duty_with_duplicate_description(client):
     response_1 = client.post("/duties", json={
-            "name": "Test duty 1",
-            "description": "Python"
+            "name": "Test name",
+            "description": "Test description"
         })
     id_of_new_duty = response_1.get_json()["id"]
     duplicate_duty_response = client.post("/duties", json={
-            "name": "Test duty 2",
-            "description": "Python"
+            "name": "Test name 2",
+            "description": "Test description"
         })
     client.delete(f"/duties/{id_of_new_duty}")
     
     assert duplicate_duty_response.status_code == 400
     assert duplicate_duty_response.get_json() == {
             'error': "Duplication error",
-            'message': "A duty with (description)=(Python) already exists"
+            'message': "A duty with (description)=(Test description) already exists"
         }
 
 def test_delete_existing_duty(client):
     post_response = client.post("/duties", json={
-            "name": "Test duty 1",
-            "description": "Python"
+            "name": "Test name",
+            "description": "Test description"
         })
     id_of_new_duty = post_response.get_json()["id"]
     delete_response = client.delete(f"/duties/{id_of_new_duty}")
@@ -142,20 +142,20 @@ def test_delete_duty_with_invalid_id(client):
 
 def test_update_existing_duty(client):
     post_response = client.post("/duties", json={
-            "name": "New test duty",
-            "description": "Python"
+            "name": "Test name",
+            "description": "Test description"
         })
     id_of_new_duty = post_response.get_json()["id"]
     patch_response = client.patch(f"/duties/{id_of_new_duty}", json={
-            "name": "Updated test duty",
-            "description": "Java"
+            "name": "Updated name",
+            "description": "Updated description"
         })
     client.delete(f"duties/{id_of_new_duty}")
     
     assert patch_response.get_json() == {
         "id": id_of_new_duty,
-        "name": "Updated test duty",
-        "description": "Java"
+        "name": "Updated name",
+        "description": "Updated description"
     }
 
 def test_update_non_existing_duty(client):
