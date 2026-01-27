@@ -111,7 +111,7 @@ def test_update_existing_coin(client):
     post_response = client.post("/api/v1/coins", json={"name": "New test coin"})
     id_of_new_coin = post_response.get_json()["id"]
     patch_response = client.patch(f"/api/v1/coins/{id_of_new_coin}", json={"name": "Updated test coin"})
-    client.delete(f"//api/v1/coins/{id_of_new_coin}")
+    client.delete(f"/api/v1/coins/{id_of_new_coin}")
     
     assert patch_response.get_json() == {
         "id": id_of_new_coin,
