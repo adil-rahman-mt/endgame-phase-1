@@ -4,11 +4,11 @@ import uuid
 valid_uuid = '00000000-0000-4000-a000-000000000000'
 invalid_uuid = '1'
 
-def test_get_all_coin_duties(client):
+def test_get_all(client):
     mock_id = uuid.uuid4()
     mock_coin_id = uuid.uuid4()
     mock_duty_id = uuid.uuid4()
-    mock_coins = [{
+    mock_coin_duties = [{
             "id": str(mock_id),
             "coin_id": str(mock_coin_id),
             "duty_id": str(mock_duty_id),
@@ -16,28 +16,26 @@ def test_get_all_coin_duties(client):
     ]
 
     mock_query = MagicMock()
-    mock_query.dicts.return_value = mock_coins
+    mock_query.dicts.return_value = mock_coin_duties
 
-    with patch("app.coins.models.Coins.select", return_value=mock_query):
-        response = client.get("/coins")
+    with patch("app.coin_duties.models.CoinDuties.select", return_value=mock_query):
+        response = client.get("/coin-duties")
     
     assert response.status_code == 200
-    assert response.get_json() == mock_coins
+    assert response.get_json() == mock_coin_duties
 
-def test_get_record_by_id(coin_duty_resources):
-    client, coin_id, duty_id, *rest = coin_duty_resources
-    
-    new_record_response = client.post("/coin-duties", json={
+def test_get_by_id(coin_duty_fixture):
+    client, coin_id, duty_id, *rest = coin_duty_fixture
+    create_coin_duty_response = client.post("/coin-duties", json={
         "coin_id": coin_id,
         "duty_id": duty_id
     })
-    id_of_new_record = new_record_response.get_json()["id"]
-    
-    get_response = client.get(f"/coin-duties/{id_of_new_record}")
-    client.delete(f"/coin-duties/{id_of_new_record}")
+    id = create_coin_duty_response.get_json()["id"]
+    get_response = client.get(f"/coin-duties/{id}")
+    client.delete(f"/coin-duties/{id}")
     
     assert get_response.get_json() == {
-        'id': id_of_new_record,
+        'id': id,
         'coin_id': coin_id,
         'duty_id': duty_id,
     }
@@ -58,11 +56,11 @@ def test_get_record_with_invalid_id(client):
         'message': "The provided ID must be a valid UUID"
     }
 
-def test_create_new_record(client):
+def test_create(client):
     mock_id = uuid.uuid4()
     mock_coin_id = uuid.uuid4()
     mock_duty_id = uuid.uuid4()
-    mock_coin = {
+    mock_coin_duty = {
             "id": str(mock_id),
             "coin_id": str(mock_coin_id),
             "duty_id": str(mock_duty_id)
@@ -82,23 +80,23 @@ def test_create_new_record(client):
         })
     
     assert response.status_code == 201
-    assert response.get_json() == mock_coin
+    assert response.get_json() == mock_coin_duty
 
-def test_create_record_with_non_existent_coin(coin_duty_resources):
-    client, _, duty_id, *rest = coin_duty_resources
-    new_record_response = client.post("/coin-duties", json={
+def test_create_with_non_existent_coin(coin_duty_fixture):
+    client, _, duty_id, *rest = coin_duty_fixture
+    create_coin_duty_response = client.post("/coin-duties", json={
         "coin_id": valid_uuid,
         "duty_id": duty_id
     })
     
-    assert new_record_response.status_code == 400
-    assert new_record_response.get_json() == {
+    assert create_coin_duty_response.status_code == 400
+    assert create_coin_duty_response.get_json() == {
             'error': "Input error",
             'message': f"Key (coin_id)=({valid_uuid}) is not present in table \"coins\"."
         }
 
-def test_create_record_with_non_existent_duty(coin_duty_resources):
-    client, coin_id, *rest = coin_duty_resources
+def test_create_with_non_existent_duty(coin_duty_fixture):
+    client, coin_id, *rest = coin_duty_fixture
     new_record_response = client.post("/coin-duties", json={
         "coin_id": coin_id,
         "duty_id": valid_uuid
@@ -110,38 +108,38 @@ def test_create_record_with_non_existent_duty(coin_duty_resources):
             'message': f"Key (duty_id)=({valid_uuid}) is not present in table \"duties\"."
         }
 
-def test_create_duplicate_record(coin_duty_resources):
-    client, coin_id, duty_id, *rest = coin_duty_resources
-    new_record_response = client.post("/coin-duties", json={
+def test_create_duplicate(coin_duty_fixture):
+    client, coin_id, duty_id, *rest = coin_duty_fixture
+    create_coin_duty_response = client.post("/coin-duties", json={
         "coin_id": coin_id,
         "duty_id": duty_id
     })
-    id_of_new_record = new_record_response.get_json()["id"]
-    duplicate_coin_response = client.post("/coin-duties", json={
+    id = create_coin_duty_response.get_json()["id"]
+    duplicate_response = client.post("/coin-duties", json={
         "coin_id": coin_id,
         "duty_id": duty_id
     })
-    client.delete(f"/coin-duties/{id_of_new_record}")
+    client.delete(f"/coin-duties/{id}")
     
-    assert duplicate_coin_response.status_code == 400
-    assert duplicate_coin_response.get_json() == {
+    assert duplicate_response.status_code == 400
+    assert duplicate_response.get_json() == {
             'error': "Duplication error",
             'message': f"This record already exists"
         }
 
-def test_delete_existing_record(coin_duty_resources):
-    client, coin_id, duty_id, *rest = coin_duty_resources
-    post_response = client.post("/coin-duties", json={
+def test_delete(coin_duty_fixture):
+    client, coin_id, duty_id, *rest = coin_duty_fixture
+    create_coin_duty_response = client.post("/coin-duties", json={
         "coin_id": coin_id,
         "duty_id": duty_id
     })
-    id_of_coin_duty = post_response.get_json()["id"]
-    delete_response = client.delete(f"/coin-duties/{id_of_coin_duty}")
+    id = create_coin_duty_response.get_json()["id"]
+    delete_response = client.delete(f"/coin-duties/{id}")
     
     assert delete_response.get_json() == {
         "status": "Success",
         "deleted": {
-                'id': id_of_coin_duty,
+                'id': id,
                 'coin_id': coin_id,
                 'duty_id': duty_id,
             }
@@ -163,21 +161,21 @@ def test_delete_record_with_invalid_id(client):
         'message': "The provided ID must be a valid UUID"
     }
 
-def test_update_existing_record(coin_duty_resources):
-    client, coin_id, duty_id, coin_2_id, duty_2_id = coin_duty_resources
-    new_record_response = client.post("/coin-duties", json={
+def test_update(coin_duty_fixture):
+    client, coin_id, duty_id, coin_2_id, duty_2_id = coin_duty_fixture
+    create_coin_duty_response = client.post("/coin-duties", json={
         "coin_id": coin_id,
         "duty_id": duty_id
     })
-    id_of_new_record = new_record_response.get_json()["id"]
-    patch_response = client.patch(f"/coin-duties/{id_of_new_record}", json={
+    id = create_coin_duty_response.get_json()["id"]
+    patch_response = client.patch(f"/coin-duties/{id}", json={
         "coin_id": coin_2_id,
         "duty_id": duty_2_id
     })
-    client.delete(f"coin-duties/{id_of_new_record}")
+    client.delete(f"coin-duties/{id}")
     
     assert patch_response.get_json() == {
-        "id": id_of_new_record,
+        "id": id,
         "coin_id": coin_2_id,
         "duty_id": duty_2_id
     }

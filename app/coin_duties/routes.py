@@ -6,18 +6,18 @@ import peewee
 coin_duties_bp = Blueprint("coin_duties", __name__)
 
 @coin_duties_bp.get("")
-def get_all_coin_duties():
+def get_all():
     coin_duties = [coin_duty for coin_duty in CoinDuties.select().dicts()]
     return jsonify(coin_duties), 200
 
 @coin_duties_bp.get('/<id>')
-def get_coin_duty_by_id(id):
+def get_by_id(id):
     try:
-        coin = CoinDuties.get_by_id(id)
+        record = CoinDuties.get_by_id(id)
         return jsonify({
-            'id': coin.id,
-            'coin_id': coin.coin_id.id,
-            'duty_id': coin.duty_id.id,
+            'id': record.id,
+            'coin_id': record.coin_id.id,
+            'duty_id': record.duty_id.id,
         }), 200
     except peewee.DoesNotExist:
         return jsonify({
@@ -31,22 +31,22 @@ def get_coin_duty_by_id(id):
         }), 400
 
 @coin_duties_bp.post('')
-def create_new_coin_duty():
+def create():
     data = request.get_json()
 
     if not data or 'coin_id' not in data or 'duty_id' not in data:
         return jsonify({'error': 'Invalid json input'}), 400
     
     try:
-        coin_to_create = CoinDuties.create(
+        record = CoinDuties.create(
             id=uuid.uuid4(),
             coin_id=data['coin_id'],
             duty_id=data['duty_id']
         )
         return jsonify({
-            'id': coin_to_create.id,
-            'coin_id': coin_to_create.coin_id.id,
-            'duty_id': coin_to_create.duty_id.id,
+            'id': record.id,
+            'coin_id': record.coin_id.id,
+            'duty_id': record.duty_id.id,
         }), 201
     except peewee.IntegrityError as err:
         if "already exists" in err.args[0]:
@@ -69,16 +69,16 @@ def create_new_coin_duty():
         }), 400
 
 @coin_duties_bp.delete('/<id>')
-def delete_a_coin_duty(id):
+def delete(id):
     try:
-        item_to_delete = CoinDuties.get_by_id(id)
-        item_to_delete.delete_instance()
+        record = CoinDuties.get_by_id(id)
+        record.delete_instance()
         return jsonify({
             'status': "Success",
             'deleted': {
-                'id': item_to_delete.id,
-                'coin_id': item_to_delete.coin_id.id,
-                'duty_id': item_to_delete.duty_id.id
+                'id': record.id,
+                'coin_id': record.coin_id.id,
+                'duty_id': record.duty_id.id
             },
         }), 200
     except peewee.DoesNotExist:
@@ -93,20 +93,19 @@ def delete_a_coin_duty(id):
         }), 400
 
 @coin_duties_bp.patch('/<id>')
-def update_a_coin_duty(id):
+def update(id):
     try:
         data = request.get_json()
-        record = CoinDuties.get(CoinDuties.id == f"{id}")
+        record = CoinDuties.get_by_id(id)
 
         if 'coin_id' in data:
             record.coin_id = data["coin_id"]
-        
         if 'duty_id' in data:
             record.duty_id = data["duty_id"]
         
         record.save()
-
         updated_record = CoinDuties.get_by_id(id)
+
         return jsonify({
             "id": updated_record.id,
             "coin_id": updated_record.coin_id.id,
