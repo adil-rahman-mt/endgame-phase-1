@@ -1,19 +1,18 @@
 name: CD pipeline
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_run:
+    workflows: ["CI pipeline"]
+    types:
+      - completed
 
 permissions:
   contents: read
 
 jobs:
   deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: Build & deploy to EC2
-    needs: test
-    if: success()
     runs-on: ubuntu-latest
 
     steps:
