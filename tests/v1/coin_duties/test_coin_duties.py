@@ -18,21 +18,21 @@ def test_get_all(client):
     mock_query = MagicMock()
     mock_query.dicts.return_value = mock_coin_duties
 
-    with patch("app.coin_duties.models.CoinDuties.select", return_value=mock_query):
-        response = client.get("/coin-duties")
+    with patch("app.api.v1.coin_duties.models.CoinDuties.select", return_value=mock_query):
+        response = client.get("/api/v1/coin-duties")
     
     assert response.status_code == 200
     assert response.get_json() == mock_coin_duties
 
 def test_get_by_id(coin_duty_fixture):
     client, coin_id, duty_id, *rest = coin_duty_fixture
-    create_coin_duty_response = client.post("/coin-duties", json={
+    create_coin_duty_response = client.post("/api/v1/coin-duties", json={
         "coin_id": coin_id,
         "duty_id": duty_id
     })
     id = create_coin_duty_response.get_json()["id"]
-    get_response = client.get(f"/coin-duties/{id}")
-    client.delete(f"/coin-duties/{id}")
+    get_response = client.get(f"/api/v1/coin-duties/{id}")
+    client.delete(f"/api/v1/coin-duties/{id}")
     
     assert get_response.get_json() == {
         'id': id,
@@ -41,7 +41,7 @@ def test_get_by_id(coin_duty_fixture):
     }
 
 def test_get_non_existent_record(client):
-    response = client.get(f"/coin-duties/{valid_uuid}")
+    response = client.get(f"/api/v1/coin-duties/{valid_uuid}")
     
     assert response.get_json() == {
         'error': "Database error",
@@ -49,7 +49,7 @@ def test_get_non_existent_record(client):
     }
 
 def test_get_record_with_invalid_id(client):
-    response = client.get(f"/coin-duties/{invalid_uuid}")
+    response = client.get(f"/api/v1/coin-duties/{invalid_uuid}")
     
     assert response.get_json() == {
         'error': "Invalid ID format",
@@ -73,8 +73,8 @@ def test_create(client):
     mock_model.duty_id = MagicMock()
     mock_model.duty_id.id = mock_duty_id
 
-    with patch("app.coin_duties.models.CoinDuties.create", return_value=mock_model):
-        response = client.post("/coin-duties", json={
+    with patch("app.api.v1.coin_duties.models.CoinDuties.create", return_value=mock_model):
+        response = client.post("/api/v1/coin-duties", json={
             "coin_id": mock_coin_id,
             "duty_id": mock_duty_id 
         })
@@ -84,7 +84,7 @@ def test_create(client):
 
 def test_create_with_non_existent_coin(coin_duty_fixture):
     client, _, duty_id, *rest = coin_duty_fixture
-    create_coin_duty_response = client.post("/coin-duties", json={
+    create_coin_duty_response = client.post("/api/v1/coin-duties", json={
         "coin_id": valid_uuid,
         "duty_id": duty_id
     })
@@ -97,7 +97,7 @@ def test_create_with_non_existent_coin(coin_duty_fixture):
 
 def test_create_with_non_existent_duty(coin_duty_fixture):
     client, coin_id, *rest = coin_duty_fixture
-    new_record_response = client.post("/coin-duties", json={
+    new_record_response = client.post("/api/v1/coin-duties", json={
         "coin_id": coin_id,
         "duty_id": valid_uuid
     })
@@ -110,16 +110,16 @@ def test_create_with_non_existent_duty(coin_duty_fixture):
 
 def test_create_duplicate(coin_duty_fixture):
     client, coin_id, duty_id, *rest = coin_duty_fixture
-    create_coin_duty_response = client.post("/coin-duties", json={
+    create_coin_duty_response = client.post("/api/v1/coin-duties", json={
         "coin_id": coin_id,
         "duty_id": duty_id
     })
     id = create_coin_duty_response.get_json()["id"]
-    duplicate_response = client.post("/coin-duties", json={
+    duplicate_response = client.post("/api/v1/coin-duties", json={
         "coin_id": coin_id,
         "duty_id": duty_id
     })
-    client.delete(f"/coin-duties/{id}")
+    client.delete(f"/api/v1/coin-duties/{id}")
     
     assert duplicate_response.status_code == 400
     assert duplicate_response.get_json() == {
@@ -129,12 +129,12 @@ def test_create_duplicate(coin_duty_fixture):
 
 def test_delete(coin_duty_fixture):
     client, coin_id, duty_id, *rest = coin_duty_fixture
-    create_coin_duty_response = client.post("/coin-duties", json={
+    create_coin_duty_response = client.post("/api/v1/coin-duties", json={
         "coin_id": coin_id,
         "duty_id": duty_id
     })
     id = create_coin_duty_response.get_json()["id"]
-    delete_response = client.delete(f"/coin-duties/{id}")
+    delete_response = client.delete(f"/api/v1/coin-duties/{id}")
     
     assert delete_response.get_json() == {
         "status": "Success",
@@ -146,7 +146,7 @@ def test_delete(coin_duty_fixture):
     }
 
 def test_delete_non_existing_record(client):
-    response = client.delete(f"/coin-duties/{valid_uuid}")
+    response = client.delete(f"/api/v1/coin-duties/{valid_uuid}")
     
     assert response.get_json() == {
         'error': "Database error",
@@ -154,7 +154,7 @@ def test_delete_non_existing_record(client):
     }
     
 def test_delete_record_with_invalid_id(client):
-    response = client.delete(f"/coin-duties/{invalid_uuid}")
+    response = client.delete(f"/api/v1/coin-duties/{invalid_uuid}")
     
     assert response.get_json() == {
         'error': "Invalid ID format",
@@ -163,16 +163,16 @@ def test_delete_record_with_invalid_id(client):
 
 def test_update(coin_duty_fixture):
     client, coin_id, duty_id, coin_2_id, duty_2_id = coin_duty_fixture
-    create_coin_duty_response = client.post("/coin-duties", json={
+    create_coin_duty_response = client.post("/api/v1/coin-duties", json={
         "coin_id": coin_id,
         "duty_id": duty_id
     })
     id = create_coin_duty_response.get_json()["id"]
-    patch_response = client.patch(f"/coin-duties/{id}", json={
+    patch_response = client.patch(f"/api/v1/coin-duties/{id}", json={
         "coin_id": coin_2_id,
         "duty_id": duty_2_id
     })
-    client.delete(f"coin-duties/{id}")
+    client.delete(f"/api/v1/coin-duties/{id}")
     
     assert patch_response.get_json() == {
         "id": id,
@@ -181,7 +181,7 @@ def test_update(coin_duty_fixture):
     }
 
 def test_update_non_existing_record(client):
-    response = client.patch(f"/coin-duties/{valid_uuid}", json={
+    response = client.patch(f"/api/v1/coin-duties/{valid_uuid}", json={
         "coin_id": valid_uuid,
         "duty_id": valid_uuid,
     })
@@ -192,7 +192,7 @@ def test_update_non_existing_record(client):
     }
 
 def test_update_record_with_invalid_id(client):
-    response = client.patch(f"/coin-duties/{invalid_uuid}", json={
+    response = client.patch(f"/api/v1/coin-duties/{invalid_uuid}", json={
         "coin_id": valid_uuid,
         "duty_id": valid_uuid,
     })

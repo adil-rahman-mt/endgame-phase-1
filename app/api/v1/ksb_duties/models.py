@@ -1,7 +1,7 @@
 from peewee import *
 from app.database import db
-from app.duties.models import Duties
-from app.ksb.models import KSB
+from app.api.v1.duties.models import Duties
+from app.api.v1.ksb.models import KSB
 
 class KsbDuties(Model):
     id = UUIDField(primary_key=True)

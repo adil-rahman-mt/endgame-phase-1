@@ -2,9 +2,9 @@ name: CI pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "api-versioning" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "api-versioning" ]
 
 permissions:
   contents: read

@@ -1,9 +1,9 @@
 from flask import Blueprint, jsonify, request
-from app.coins.models import Coins
+from app.api.v1.coins.models import Coins
 import uuid 
 import peewee
 
-coins_bp = Blueprint("coins", __name__)
+coins_bp = Blueprint("coins", __name__, url_prefix="/coins")
 
 @coins_bp.get("")
 def get_all_coins():

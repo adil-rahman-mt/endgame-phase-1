@@ -1,22 +1,22 @@
 from flask import Blueprint, jsonify, request
-from app.coin_duties.models import CoinDuties
+from app.api.v1.ksb_duties.models import KsbDuties
 import uuid 
 import peewee
 
-coin_duties_bp = Blueprint("coin_duties", __name__)
+ksb_duties_bp = Blueprint("ksb_duties", __name__, url_prefix="/ksb-duties")
 
-@coin_duties_bp.get("")
+@ksb_duties_bp.get("")
 def get_all():
-    coin_duties = [coin_duty for coin_duty in CoinDuties.select().dicts()]
-    return jsonify(coin_duties), 200
+    ksb_duties = [ksb_duty for ksb_duty in KsbDuties.select().dicts()]
+    return jsonify(ksb_duties), 200
 
-@coin_duties_bp.get('/<id>')
+@ksb_duties_bp.get('/<id>')
 def get_by_id(id):
     try:
-        record = CoinDuties.get_by_id(id)
+        record = KsbDuties.get_by_id(id)
         return jsonify({
             'id': record.id,
-            'coin_id': record.coin_id.id,
+            'ksb_id': record.ksb_id.id,
             'duty_id': record.duty_id.id,
         }), 200
     except peewee.DoesNotExist:
@@ -30,22 +30,22 @@ def get_by_id(id):
             'message': "The provided ID must be a valid UUID"
         }), 400
 
-@coin_duties_bp.post('')
+@ksb_duties_bp.post('')
 def create():
     data = request.get_json()
 
-    if not data or 'coin_id' not in data or 'duty_id' not in data:
+    if not data or 'ksb_id' not in data or 'duty_id' not in data:
         return jsonify({'error': 'Invalid json input'}), 400
     
     try:
-        record = CoinDuties.create(
+        record = KsbDuties.create(
             id=uuid.uuid4(),
-            coin_id=data['coin_id'],
+            ksb_id=data['ksb_id'],
             duty_id=data['duty_id']
         )
         return jsonify({
             'id': record.id,
-            'coin_id': record.coin_id.id,
+            'ksb_id': record.ksb_id.id,
             'duty_id': record.duty_id.id,
         }), 201
     except peewee.IntegrityError as err:
@@ -68,16 +68,16 @@ def create():
             'message': "IDs must be a valid UUID"
         }), 400
 
-@coin_duties_bp.delete('/<id>')
+@ksb_duties_bp.delete('/<id>')
 def delete(id):
     try:
-        record = CoinDuties.get_by_id(id)
+        record = KsbDuties.get_by_id(id)
         record.delete_instance()
         return jsonify({
             'status': "Success",
             'deleted': {
                 'id': record.id,
-                'coin_id': record.coin_id.id,
+                'ksb_id': record.ksb_id.id,
                 'duty_id': record.duty_id.id
             },
         }), 200
@@ -92,23 +92,23 @@ def delete(id):
             'message': "The provided ID must be a valid UUID"
         }), 400
 
-@coin_duties_bp.patch('/<id>')
+@ksb_duties_bp.patch('/<id>')
 def update(id):
     try:
         data = request.get_json()
-        record = CoinDuties.get_by_id(id)
+        record = KsbDuties.get_by_id(id)
 
-        if 'coin_id' in data:
-            record.coin_id = data["coin_id"]
+        if 'ksb_id' in data:
+            record.ksb_id = data["ksb_id"]
         if 'duty_id' in data:
             record.duty_id = data["duty_id"]
         
         record.save()
-        updated_record = CoinDuties.get_by_id(id)
+        updated_record = KsbDuties.get_by_id(id)
 
         return jsonify({
             "id": updated_record.id,
-            "coin_id": updated_record.coin_id.id,
+            "ksb_id": updated_record.ksb_id.id,
             "duty_id": updated_record.duty_id.id
         }), 200
     except peewee.DoesNotExist:

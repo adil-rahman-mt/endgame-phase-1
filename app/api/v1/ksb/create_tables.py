@@ -1,5 +1,5 @@
 from app.database import db
-from app.ksb.models import KSB
+from ksb.models import KSB
 
 db.connect()
 db.create_tables([KSB])

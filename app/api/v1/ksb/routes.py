@@ -1,9 +1,9 @@
 from flask import Blueprint, jsonify, request
-from app.ksb.models import KSB
+from app.api.v1.ksb.models import KSB
 import uuid 
 import peewee
 
-ksb_bp = Blueprint("ksbs", __name__)
+ksb_bp = Blueprint("ksbs", __name__, url_prefix="/ksb")
 
 @ksb_bp.get("")
 def get_all_ksbs():

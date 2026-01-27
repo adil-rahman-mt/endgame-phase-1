@@ -1,6 +1,5 @@
 import pytest
 from app import create_app
-from app.coins.models import Coins
 
 @pytest.fixture
 def client():
@@ -16,19 +15,19 @@ def coin_duty_fixture():
     app.config["TESTING"] = True
 
     with app.test_client() as client:
-        coin_response = client.post("/coins", json={"name": "Test coin name"})
+        coin_response = client.post("/api/v1/coins", json={"name": "Test coin name"})
         coin_id = coin_response.get_json()["id"]
 
-        coin_2_response = client.post("/coins", json={"name": "Test coin name 2"})
+        coin_2_response = client.post("/api/v1/coins", json={"name": "Test coin name 2"})
         coin_2_id = coin_2_response.get_json()["id"]
         
-        duty_response = client.post("/duties", json={
+        duty_response = client.post("/api/v1/duties", json={
             "name": "Test duty name",
             "description": "Test duty description"
         })
         duty_id = duty_response.get_json()["id"]
 
-        duty_2_response = client.post("/duties", json={
+        duty_2_response = client.post("/api/v1/duties", json={
             "name": "Test duty name 2",
             "description": "Test duty description 2"
         })
@@ -36,10 +35,10 @@ def coin_duty_fixture():
         
         yield client, coin_id, duty_id, coin_2_id, duty_2_id
 
-        client.delete(f"/coins/{coin_id}")
-        client.delete(f"/coins/{coin_2_id}")
-        client.delete(f"/duties/{duty_id}")
-        client.delete(f"/duties/{duty_2_id}")
+        client.delete(f"/api/v1/coins/{coin_id}")
+        client.delete(f"/api/v1/coins/{coin_2_id}")
+        client.delete(f"/api/v1/duties/{duty_id}")
+        client.delete(f"/api/v1/duties/{duty_2_id}")
 
 @pytest.fixture
 def ksb_duty_fixture():
@@ -47,27 +46,27 @@ def ksb_duty_fixture():
     app.config["TESTING"] = True
 
     with app.test_client() as client:
-        ksb_response = client.post("/ksb", json={
+        ksb_response = client.post("/api/v1/ksb", json={
             "type": "Knowledge",
             "name": "Test KSB name",
             "description": "Test KSB description"
         })
         ksb_id = ksb_response.get_json()["id"]
 
-        ksb_2_response = client.post("/ksb", json={
+        ksb_2_response = client.post("/api/v1/ksb", json={
             "type": "Skill",
             "name": "Test KSB name 2",
             "description": "Test KSB description 2"
         })
         ksb_2_id = ksb_2_response.get_json()["id"]
         
-        duty_response = client.post("/duties", json={
+        duty_response = client.post("/api/v1/duties", json={
             "name": "Test duty name",
             "description": "Test duty description"
         })
         duty_id = duty_response.get_json()["id"]
 
-        duty_2_response = client.post("/duties", json={
+        duty_2_response = client.post("/api/v1/duties", json={
             "name": "Test duty name 2",
             "description": "Test duty description 2"
         })
@@ -75,8 +74,8 @@ def ksb_duty_fixture():
         
         yield client, ksb_id, duty_id, ksb_2_id, duty_2_id
 
-        client.delete(f"/ksb/{ksb_id}")
-        client.delete(f"/ksb/{ksb_2_id}")
-        client.delete(f"/duties/{duty_id}")
-        client.delete(f"/duties/{duty_2_id}")
+        client.delete(f"/api/v1/ksb/{ksb_id}")
+        client.delete(f"/api/v1/ksb/{ksb_2_id}")
+        client.delete(f"/api/v1/duties/{duty_id}")
+        client.delete(f"/api/v1/duties/{duty_2_id}")
 

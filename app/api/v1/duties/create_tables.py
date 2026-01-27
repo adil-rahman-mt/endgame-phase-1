@@ -1,5 +1,5 @@
 from app.database import db
-from app.duties.models import Duties
+from duties.models import Duties
 
 db.connect()
 db.create_tables([Duties])

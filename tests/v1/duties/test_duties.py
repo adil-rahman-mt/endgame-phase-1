@@ -16,20 +16,20 @@ def test_get_all_duties(client):
     mock_query = MagicMock()
     mock_query.dicts.return_value = mock_duties
 
-    with patch("app.duties.models.Duties.select", return_value=mock_query):
-        response = client.get("/duties")
+    with patch("app.api.v1.duties.models.Duties.select", return_value=mock_query):
+        response = client.get("/api/v1/duties")
     
     assert response.status_code == 200
     assert response.get_json() == mock_duties
 
 def test_get_duty_by_id(client):
-    post_response = client.post("/duties", json={
+    post_response = client.post("/api/v1/duties", json={
             "name": "Test name",
             "description": "Test description"
         })
     id_of_new_duty = post_response.get_json()["id"]
-    get_response = client.get(f"/duties/{id_of_new_duty}")
-    client.delete(f"/duties/{id_of_new_duty}")
+    get_response = client.get(f"/api/v1/duties/{id_of_new_duty}")
+    client.delete(f"/api/v1/duties/{id_of_new_duty}")
     
     assert get_response.get_json() == {
         "id": id_of_new_duty,
@@ -38,7 +38,7 @@ def test_get_duty_by_id(client):
     }
 
 def test_get_non_existent_duty(client):
-    response = client.get(f"/duties/{valid_uuid}")
+    response = client.get(f"/api/v1/duties/{valid_uuid}")
     
     assert response.get_json() == {
         'error': "Database error",
@@ -46,7 +46,7 @@ def test_get_non_existent_duty(client):
     }
 
 def test_get_duty_with_invalid_id(client):
-    response = client.get(f"/duties/{invalid_uuid}")
+    response = client.get(f"/api/v1/duties/{invalid_uuid}")
     
     assert response.get_json() == {
         'error': "Invalid ID format",
@@ -66,8 +66,8 @@ def test_create_new_duty(client):
     mock_model.name = "Mock duty"
     mock_model.description = "Mock description"
 
-    with patch("app.duties.models.Duties.create", return_value=mock_model):
-        response = client.post("/duties", json={
+    with patch("app.api.v1.duties.models.Duties.create", return_value=mock_model):
+        response = client.post("/api/v1/duties", json={
                 "name": "Mock duty",
                 "description": "Mock description"
             })
@@ -76,16 +76,16 @@ def test_create_new_duty(client):
     assert response.get_json() == mock_duty
 
 def test_create_duty_with_duplicate_name(client):
-    response_1 = client.post("/duties", json={
+    response_1 = client.post("/api/v1/duties", json={
             "name": "Test name",
             "description": "Test description"
         })
     id_of_new_duty = response_1.get_json()["id"]
-    duplicate_duty_response = client.post("/duties", json={
+    duplicate_duty_response = client.post("/api/v1/duties", json={
             "name": "Test name",
             "description": "Test description 2"
         })
-    client.delete(f"/duties/{id_of_new_duty}")
+    client.delete(f"/api/v1/duties/{id_of_new_duty}")
     
     assert duplicate_duty_response.status_code == 400
     assert duplicate_duty_response.get_json() == {
@@ -94,16 +94,16 @@ def test_create_duty_with_duplicate_name(client):
         }
 
 def test_create_duty_with_duplicate_description(client):
-    response_1 = client.post("/duties", json={
+    response_1 = client.post("/api/v1/duties", json={
             "name": "Test name",
             "description": "Test description"
         })
     id_of_new_duty = response_1.get_json()["id"]
-    duplicate_duty_response = client.post("/duties", json={
+    duplicate_duty_response = client.post("/api/v1/duties", json={
             "name": "Test name 2",
             "description": "Test description"
         })
-    client.delete(f"/duties/{id_of_new_duty}")
+    client.delete(f"/api/v1/duties/{id_of_new_duty}")
     
     assert duplicate_duty_response.status_code == 400
     assert duplicate_duty_response.get_json() == {
@@ -112,14 +112,14 @@ def test_create_duty_with_duplicate_description(client):
         }
 
 def test_delete_existing_duty(client):
-    post_response = client.post("/duties", json={
+    post_response = client.post("/api/v1/duties", json={
             "name": "Test name",
             "description": "Test description"
         })
     duty_id = post_response.get_json()["id"]
     duty_name = post_response.get_json()["name"]
     duty_description = post_response.get_json()["description"]
-    delete_response = client.delete(f"/duties/{duty_id}")
+    delete_response = client.delete(f"/api/v1/duties/{duty_id}")
     
     assert delete_response.get_json() == {
         "status": "Success",
@@ -131,7 +131,7 @@ def test_delete_existing_duty(client):
     }
 
 def test_delete_non_existing_duty(client):
-    response = client.delete(f"/duties/{valid_uuid}")
+    response = client.delete(f"/api/v1/duties/{valid_uuid}")
     
     assert response.get_json() == {
         'error': "Database error",
@@ -139,7 +139,7 @@ def test_delete_non_existing_duty(client):
     }
     
 def test_delete_duty_with_invalid_id(client):
-    response = client.delete(f"/duties/{invalid_uuid}")
+    response = client.delete(f"/api/v1/duties/{invalid_uuid}")
     
     assert response.get_json() == {
         'error': "Invalid ID format",
@@ -147,16 +147,16 @@ def test_delete_duty_with_invalid_id(client):
     }
 
 def test_update_existing_duty(client):
-    post_response = client.post("/duties", json={
+    post_response = client.post("/api/v1/duties", json={
             "name": "Test name",
             "description": "Test description"
         })
     id_of_new_duty = post_response.get_json()["id"]
-    patch_response = client.patch(f"/duties/{id_of_new_duty}", json={
+    patch_response = client.patch(f"/api/v1/duties/{id_of_new_duty}", json={
             "name": "Updated name",
             "description": "Updated description"
         })
-    client.delete(f"duties/{id_of_new_duty}")
+    client.delete(f"/api/v1/duties/{id_of_new_duty}")
     
     assert patch_response.get_json() == {
         "id": id_of_new_duty,
@@ -165,7 +165,7 @@ def test_update_existing_duty(client):
     }
 
 def test_update_non_existing_duty(client):
-    response = client.patch(f"/duties/{valid_uuid}", json={"name": "Updated duty"})
+    response = client.patch(f"/api/v1/duties/{valid_uuid}", json={"name": "Updated duty"})
     
     assert response.get_json() == {
         'error': "Database error",
@@ -173,7 +173,7 @@ def test_update_non_existing_duty(client):
     }
 
 def test_update_duty_with_invalid_id(client):
-    response = client.patch(f"/duties/{invalid_uuid}", json={"name": "Updated duty"})
+    response = client.patch(f"/api/v1/duties/{invalid_uuid}", json={"name": "Updated duty"})
     
     assert response.get_json() == {
         'error': "Invalid ID format",
