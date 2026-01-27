@@ -92,7 +92,7 @@ def test_create_with_non_existent_ksb(ksb_duty_fixture):
     assert create_ksb_duty_response.status_code == 400
     assert create_ksb_duty_response.get_json() == {
             'error': "Input error",
-            'message': f"Key (ksb_id)=({valid_uuid}) is not present in table \"ksbs\"."
+            'message': f"Key (ksb_id)=({valid_uuid}) is not present in table \"ksb\"."
         }
 
 def test_create_with_non_existent_duty(ksb_duty_fixture):

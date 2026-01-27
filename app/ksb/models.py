@@ -13,4 +13,4 @@ class KSB(Model):
 
     class Meta:
         database = db
-        table_name="ksbs"
+        table_name="ksb"
