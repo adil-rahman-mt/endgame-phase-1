@@ -4,6 +4,8 @@ import uuid
 valid_uuid = '00000000-0000-4000-a000-000000000000'
 invalid_uuid = '1'
 
+# COINS
+
 def test_get_all_coins(client):
     mock_id = uuid.uuid4()
     mock_coins = [{
@@ -132,4 +134,156 @@ def test_update_coin_with_invalid_id(client):
     assert response.get_json() == {
         'error': "Invalid ID format",
         'message': "The provided ID must be a valid UUID"
+    }
+
+# COIN AND DUTY RELATIONSHIPS
+
+def test_get_all_duties_for_coin(coin_duty_fixture):
+    client, coin, duty, *rest = coin_duty_fixture
+    client.post(f"/coins/{coin.id}/duties/{duty.id}")
+    get_duties_for_coin_response = client.get(f"/coins/{coin.id}/duties")
+    client.delete(f"/coins/{coin.id}/duties/{duty.id}")
+    
+    assert get_duties_for_coin_response.get_json() == {
+        'Coin': coin.name,
+        'linked_to': [duty.name]
+    }
+
+def test_get_all_duties_for_non_existent_coin(client):
+    response = client.get(f"/coins/{valid_uuid}/duties")
+    
+    assert response.get_json() == {
+        'error': "Database error",
+        'message': f"A coin with ID = {valid_uuid} does not exist"
+    }
+
+def test_get_all_duties_for_invalid_coin_id(client):
+    response = client.get(f"/coins/{invalid_uuid}/duties")
+    
+    assert response.get_json() == {
+        'error': "Invalid ID format",
+        'message': "The provided coin ID must be a valid UUID"
+    }
+
+def test_add_duty_to_coin(coin_duty_fixture):
+    client, coin, duty, *rest = coin_duty_fixture
+    add_duty_to_coin_response = client.post(f"/coins/{coin.id}/duties/{duty.id}")
+    id = add_duty_to_coin_response.get_json()["id"]
+    
+    assert add_duty_to_coin_response.get_json() == {
+        'id': id,
+        'coin_id': str(coin.id),
+        'duty_id': str(duty.id),
+    }
+
+def test_duplication_of_adding_duty_to_coin(coin_duty_fixture):
+    client, coin, duty, *rest = coin_duty_fixture
+    add_duty_to_coin_response = client.post(f"/coins/{coin.id}/duties/{duty.id}")
+    duplicate_response = client.post(f"/coins/{coin.id}/duties/{duty.id}")
+    
+    assert duplicate_response.status_code == 400
+    assert duplicate_response.get_json() == {
+        'error': "Duplication error",
+        'message': f"{duty.name} is already associated with {coin.name}"
+    }
+
+def test_add_duty_to_non_existent_coin(coin_duty_fixture):
+    client, _, duty, *rest = coin_duty_fixture
+    add_duty_to_coin_response = client.post(f"/coins/{valid_uuid}/duties/{duty.id}")
+
+    assert add_duty_to_coin_response.status_code == 400
+    assert add_duty_to_coin_response.get_json() == {
+        'error': "Invalid ID",
+        'message': f"A coin with ID = {valid_uuid} does not exist"
+    }
+
+def test_add_non_existent_duty_to_coin(coin_duty_fixture):
+    client, coin, *rest = coin_duty_fixture
+    add_duty_to_coin_response = client.post(f"/coins/{coin.id}/duties/{valid_uuid}")
+
+    assert add_duty_to_coin_response.status_code == 400
+    assert add_duty_to_coin_response.get_json() == {
+        'error': "Invalid ID",
+        'message': f"A duty with ID = {valid_uuid} does not exist"
+    }
+
+def test_add_duty_to_invalid_coin(coin_duty_fixture):
+    client, _, duty, *rest = coin_duty_fixture
+    add_duty_to_coin_response = client.post(f"/coins/{invalid_uuid}/duties/{duty.id}")
+
+    assert add_duty_to_coin_response.status_code == 400
+    assert add_duty_to_coin_response.get_json() == {
+        'error': "Invalid ID format",
+        'message': "IDs must be a valid UUID"
+    }
+
+def test_add_invalid_duty_to_coin(coin_duty_fixture):
+    client, coin, *rest = coin_duty_fixture
+    add_duty_to_coin_response = client.post(f"/coins/{coin.id}/duties/{invalid_uuid}")
+
+    assert add_duty_to_coin_response.status_code == 400
+    assert add_duty_to_coin_response.get_json() == {
+        'error': "Invalid ID format",
+        'message': "IDs must be a valid UUID"
+    }
+
+def test_remove_duty_from_coin(coin_duty_fixture):
+    client, coin, duty, *rest = coin_duty_fixture
+    add_duty_to_coin_response = client.post(f"/coins/{coin.id}/duties/{duty.id}")
+    remove_duty_from_coin_response = client.delete(f"/coins/{coin.id}/duties/{duty.id}")
+
+    assert remove_duty_from_coin_response.status_code == 200
+    assert remove_duty_from_coin_response.get_json() == {
+        'status': "Success",
+        'message': f"Deleted {duty.name} from {coin.name}",
+    }
+
+def test_remove_duty_from_non_existent_coin(coin_duty_fixture):
+    client, _, duty, *rest = coin_duty_fixture
+    remove_response = client.delete(f"/coins/{valid_uuid}/duties/{duty.id}")
+
+    assert remove_response.status_code == 400
+    assert remove_response.get_json() == {
+        'error': "Invalid ID",
+        'message': f"A coin with ID = {valid_uuid} does not exist"
+    }
+
+def test_remove_non_existent_duty_from_coin(coin_duty_fixture):
+    client, coin, *rest = coin_duty_fixture
+    remove_response = client.delete(f"/coins/{coin.id}/duties/{valid_uuid}")
+
+    assert remove_response.status_code == 400
+    assert remove_response.get_json() == {
+        'error': "Invalid ID",
+        'message': f"A duty with ID = {valid_uuid} does not exist"
+    }
+
+def test_remove_duty_that_is_unassociated_with_coin(coin_duty_fixture):
+    client, coin, duty, *rest = coin_duty_fixture
+    remove_response = client.delete(f"/coins/{coin.id}/duties/{duty.id}")
+
+    assert remove_response.status_code == 400
+    assert remove_response.get_json() == {
+        'error': "Record does not exist",
+        'message': f"{duty.name} is not associated with {coin.name}"
+    }
+
+def test_remove_duty_from_invalid_coin(coin_duty_fixture):
+    client, _, duty, *rest = coin_duty_fixture
+    remove_response = client.delete(f"/coins/{invalid_uuid}/duties/{duty.id}")
+
+    assert remove_response.status_code == 400
+    assert remove_response.get_json() == {
+        'error': "Invalid ID format",
+        'message': "IDs must be a valid UUID"
+    }
+
+def test_remove_invalid_duty_from_coin(coin_duty_fixture):
+    client, coin, *rest = coin_duty_fixture
+    remove_response = client.delete(f"/coins/{coin.id}/duties/{invalid_uuid}")
+
+    assert remove_response.status_code == 400
+    assert remove_response.get_json() == {
+        'error': "Invalid ID format",
+        'message': "IDs must be a valid UUID"
     }

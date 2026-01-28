@@ -1,6 +1,7 @@
 import pytest
 from app import create_app
 from app.coins.models import Coins
+from app.duties.models import Duties
 
 @pytest.fixture
 def client():
@@ -18,7 +19,6 @@ def coin_duty_fixture():
     with app.test_client() as client:
         coin_response = client.post("/coins", json={"name": "Test coin name"})
         coin_id = coin_response.get_json()["id"]
-
         coin_2_response = client.post("/coins", json={"name": "Test coin name 2"})
         coin_2_id = coin_2_response.get_json()["id"]
         
@@ -27,14 +27,18 @@ def coin_duty_fixture():
             "description": "Test duty description"
         })
         duty_id = duty_response.get_json()["id"]
-
         duty_2_response = client.post("/duties", json={
             "name": "Test duty name 2",
             "description": "Test duty description 2"
         })
         duty_2_id = duty_2_response.get_json()["id"]
+
+        coin = Coins.get_by_id(coin_id)
+        coin_2 = Coins.get_by_id(coin_2_id)
+        duty = Duties.get_by_id(duty_id)
+        duty_2 = Duties.get_by_id(duty_2_id)
         
-        yield client, coin_id, duty_id, coin_2_id, duty_2_id
+        yield client, coin, duty, coin_2, duty_2
 
         client.delete(f"/coins/{coin_id}")
         client.delete(f"/coins/{coin_2_id}")

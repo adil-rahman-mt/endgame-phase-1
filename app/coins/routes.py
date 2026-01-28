@@ -1,9 +1,14 @@
 from flask import Blueprint, jsonify, request
 from app.coins.models import Coins
+from app.duties.models import Duties
+from app.coin_duties.models import CoinDuties
 import uuid 
+from peewee import JOIN
 import peewee
 
 coins_bp = Blueprint("coins", __name__)
+
+# COINS
 
 @coins_bp.get("")
 def get_all_coins():
@@ -95,4 +100,104 @@ def update_a_coin(id):
         return jsonify({
             'error': "Invalid ID format",
             'message': "The provided ID must be a valid UUID"
+        }), 400
+
+# COIN AND DUTY RELATIONSHIPS
+
+@coins_bp.get('/<coin_id>/duties')
+def get_all_duties_for_coin(coin_id):
+    try:
+        query = (Duties
+            .select(Duties.name)
+            .join(CoinDuties, JOIN.INNER)
+            .where(CoinDuties.coin_id == coin_id))
+        return jsonify({
+                'Coin': Coins.get_by_id(coin_id).name,
+                'linked_to': [duty.name for duty in query]
+            }), 200
+    except peewee.DoesNotExist:
+        return jsonify({
+            'error': "Database error",
+            'message': f"A coin with ID = {coin_id} does not exist"
+        }), 400
+    except peewee.DataError:
+        return jsonify({
+            'error': "Invalid ID format",
+            'message': "The provided coin ID must be a valid UUID"
+        }), 400
+
+@coins_bp.post('/<coin_id>/duties/<duty_id>')
+def add_duty_to_coin(coin_id, duty_id):
+    try:
+        coin = Coins.get_by_id(coin_id)
+        duty = Duties.get_by_id(duty_id)
+        record = CoinDuties.create(
+                id=uuid.uuid4(),
+                coin_id = coin_id,
+                duty_id = duty_id,
+            )
+        return jsonify({
+            'id': record.id,
+            'coin_id': record.coin_id.id,
+            'duty_id': record.duty_id.id,
+        }), 201
+    except peewee.IntegrityError as err:
+        if "already exists" in err.args[0]:
+            return jsonify({
+                'error': "Duplication error",
+                'message': f"{duty.name} is already associated with {coin.name}"
+            }), 400
+    except peewee.DoesNotExist as err:
+        if "Model: Coins" in err.args[0]:
+            return jsonify({
+                'error': "Invalid ID",
+                'message': f"A coin with ID = {coin_id} does not exist"
+            }), 400
+        if "Model: Duties" in err.args[0]:
+            return jsonify({
+                'error': "Invalid ID",
+                'message': f"A duty with ID = {duty_id} does not exist"
+            }), 400
+        return jsonify({
+                'error': "Unknown error",
+            }), 400
+    except peewee.DataError as err:
+        return jsonify({
+            'error': "Invalid ID format",
+            'message': "IDs must be a valid UUID"
+        }), 400
+
+@coins_bp.delete('/<coin_id>/duties/<duty_id>')
+def remove_duty_from_coin(coin_id, duty_id):
+    try:
+        Coins.get_by_id(coin_id)
+        coin_name = Coins.get_by_id(coin_id).name
+        Duties.get_by_id(duty_id)
+        duty_name = Duties.get_by_id(duty_id).name
+
+        record = CoinDuties.get(CoinDuties.coin_id == coin_id, CoinDuties.duty_id == duty_id)
+        record.delete_instance()
+        return jsonify({
+                'status': "Success",
+                'message': f"Deleted {duty_name} from {coin_name}",
+            }), 200
+    except peewee.DoesNotExist as err:
+        if "Model: Coins" in err.args[0]:
+            return jsonify({
+                'error': "Invalid ID",
+                'message': f"A coin with ID = {coin_id} does not exist"
+            }), 400
+        if "Model: Duties" in err.args[0]:
+            return jsonify({
+                'error': "Invalid ID",
+                'message': f"A duty with ID = {duty_id} does not exist"
+            }), 400
+        return jsonify({
+                'error': "Record does not exist",
+                'message': f"{duty_name} is not associated with {coin_name}"
+            }), 400
+    except peewee.DataError as err:
+        return jsonify({
+            'error': "Invalid ID format",
+            'message': "IDs must be a valid UUID"
         }), 400
