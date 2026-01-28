@@ -13,6 +13,8 @@ jobs:
   deploy:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: Build & deploy to EC2
+    env:
+      DB_URL: ${{ secrets.DB_URL }}  
     runs-on: ubuntu-latest
 
     steps:
@@ -36,4 +38,4 @@ jobs:
             sudo docker build -t flask-img:latest .
             sudo docker stop flask-container || true
             sudo docker rm flask-container || true
-            sudo docker run -d --name flask-container --restart unless-stopped -p 5000:5000 flask-img:latest
+            sudo docker run -d --name flask-container --restart unless-stopped -p 5000:5000 -e DB_URL="${DB_URL}" flask-img:latest
