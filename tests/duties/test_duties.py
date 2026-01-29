@@ -4,6 +4,8 @@ import uuid
 valid_uuid = '00000000-0000-4000-a000-000000000000'
 invalid_uuid = '1'
 
+# DUTIES
+
 def test_get_all_duties(client):
     mock_id = uuid.uuid4()
     mock_duties = [{
@@ -179,3 +181,156 @@ def test_update_duty_with_invalid_id(client):
         'error': "Invalid ID format",
         'message': "The provided ID must be a valid UUID"
     }
+
+# DUTY AND KSB RELATIONSHIPS
+
+def test_get_all_ksb_for_duty(ksb_duty_fixture):
+    client, ksb, duty, *rest = ksb_duty_fixture
+    client.post(f"/duties/{duty.id}/ksb/{ksb.id}")
+    get_ksb_for_duty_response = client.get(f"/duties/{duty.id}/ksb")
+    client.delete(f"/duties/{duty.id}/ksb/{ksb.id}")
+    
+    assert get_ksb_for_duty_response.get_json() == {
+        'Duty': duty.name,
+        'linked_to': [ksb.name]
+    }
+
+def test_get_all_ksb_for_non_existent_duty(client):
+    response = client.get(f"/duties/{valid_uuid}/ksb")
+    
+    assert response.get_json() == {
+        'error': "Database error",
+        'message': f"A duty with ID = {valid_uuid} does not exist"
+    }
+
+def test_get_all_ksb_for_invalid_duty(client):
+    response = client.get(f"/duties/{invalid_uuid}/ksb")
+    
+    assert response.get_json() == {
+        'error': "Invalid ID format",
+        'message': "The provided duty ID must be a valid UUID"
+    }
+
+def test_add_ksb_to_duty(ksb_duty_fixture):
+    client, ksb, duty, *rest = ksb_duty_fixture
+    add_ksb_to_duty_response = client.post(f"/duties/{duty.id}/ksb/{ksb.id}")
+    id = add_ksb_to_duty_response.get_json()["id"]
+    
+    assert add_ksb_to_duty_response.get_json() == {
+        'id': id,
+        'duty_id': str(duty.id),
+        'ksb_id': str(ksb.id),
+    }
+
+def test_duplication_of_adding_ksb_to_duty(ksb_duty_fixture):
+    client, ksb, duty, *rest = ksb_duty_fixture
+    add_ksb_to_duty_response = client.post(f"/duties/{duty.id}/ksb/{ksb.id}")
+    duplicate_response = client.post(f"/duties/{duty.id}/ksb/{ksb.id}")
+    
+    assert duplicate_response.status_code == 409
+    assert duplicate_response.get_json() == {
+        'error': "Duplication error",
+        'message': f"{ksb.name} is already associated with {duty.name}"
+    }
+
+def test_add_ksb_to_non_existent_duty(ksb_duty_fixture):
+    client, ksb, *rest = ksb_duty_fixture
+    add_ksb_to_duty_response = client.post(f"/duties/{valid_uuid}/ksb/{ksb.id}")
+
+    assert add_ksb_to_duty_response.status_code == 404
+    assert add_ksb_to_duty_response.get_json() == {
+        'error': "Invalid ID",
+        'message': f"A duty with ID = {valid_uuid} does not exist"
+    }
+
+def test_add_non_existent_ksb_to_duty(ksb_duty_fixture):
+    client, _, duty, *rest = ksb_duty_fixture
+    add_ksb_to_duty_response = client.post(f"/duties/{duty.id}/ksb/{valid_uuid}")
+
+    assert add_ksb_to_duty_response.status_code == 404
+    assert add_ksb_to_duty_response.get_json() == {
+        'error': "Invalid ID",
+        'message': f"A KSB with ID = {valid_uuid} does not exist"
+    }
+
+def test_add_ksb_to_invalid_duty(ksb_duty_fixture):
+    client, ksb, *rest = ksb_duty_fixture
+    add_ksb_to_duty_response = client.post(f"/duties/{invalid_uuid}/ksb/{ksb.id}")
+
+    assert add_ksb_to_duty_response.status_code == 400
+    assert add_ksb_to_duty_response.get_json() == {
+        'error': "Invalid ID format",
+        'message': "IDs must be a valid UUID"
+    }
+
+def test_add_invalid_ksb_to_duty(ksb_duty_fixture):
+    client, _, duty, *rest = ksb_duty_fixture
+    add_ksb_to_duty_response = client.post(f"/duties/{duty.id}/ksb/{invalid_uuid}")
+
+    assert add_ksb_to_duty_response.status_code == 400
+    assert add_ksb_to_duty_response.get_json() == {
+        'error': "Invalid ID format",
+        'message': "IDs must be a valid UUID"
+    }
+
+def test_remove_ksb_from_duty(ksb_duty_fixture):
+    client, ksb, duty, *rest = ksb_duty_fixture
+    add_ksb_to_duty_response = client.post(f"/duties/{duty.id}/ksb/{ksb.id}")
+    remove_ksb_from_duty_response = client.delete(f"/duties/{duty.id}/ksb/{ksb.id}")
+
+    assert remove_ksb_from_duty_response.status_code == 200
+    assert remove_ksb_from_duty_response.get_json() == {
+        'status': "Success",
+        'message': f"Removed {ksb.name} from {duty.name}",
+    }
+
+def test_remove_ksb_from_non_existent_duty(ksb_duty_fixture):
+    client, ksb, *rest = ksb_duty_fixture
+    remove_response = client.delete(f"/duties/{valid_uuid}/ksb/{ksb.id}")
+
+    assert remove_response.status_code == 404
+    assert remove_response.get_json() == {
+        'error': "Invalid ID",
+        'message': f"A duty with ID = {valid_uuid} does not exist"
+    }
+
+def test_remove_non_existent_ksb_from_duty(ksb_duty_fixture):
+    client, _, duty, *rest = ksb_duty_fixture
+    remove_response = client.delete(f"/duties/{duty.id}/ksb/{valid_uuid}")
+
+    assert remove_response.status_code == 404
+    assert remove_response.get_json() == {
+        'error': "Invalid ID",
+        'message': f"A KSB with ID = {valid_uuid} does not exist"
+    }
+
+def test_remove_duty_that_is_unassociated_with_coin(ksb_duty_fixture):
+    client, ksb, duty, *rest = ksb_duty_fixture
+    remove_response = client.delete(f"/duties/{duty.id}/ksb/{ksb.id}")
+
+    assert remove_response.status_code == 404
+    assert remove_response.get_json() == {
+        'error': "Record does not exist",
+        'message': f"{ksb.name} is not associated with {duty.name}"
+    }
+
+def test_remove_ksb_from_invalid_duty(ksb_duty_fixture):
+    client, ksb, *rest = ksb_duty_fixture
+    remove_response = client.delete(f"duties/{invalid_uuid}/ksb/{ksb.id}")
+
+    assert remove_response.status_code == 400
+    assert remove_response.get_json() == {
+        'error': "Invalid ID format",
+        'message': "IDs must be a valid UUID"
+    }
+
+def test_remove_invalid_ksb_from_duty(ksb_duty_fixture):
+    client, _, duty, *rest = ksb_duty_fixture
+    remove_response = client.delete(f"duties/{duty.id}/ksb/{invalid_uuid}")
+
+    assert remove_response.status_code == 400
+    assert remove_response.get_json() == {
+        'error': "Invalid ID format",
+        'message': "IDs must be a valid UUID"
+    }
+

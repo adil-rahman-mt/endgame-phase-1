@@ -2,6 +2,7 @@ import pytest
 from app import create_app
 from app.coins.models import Coins
 from app.duties.models import Duties
+from app.ksb.models import KSB
 
 @pytest.fixture
 def client():
@@ -57,7 +58,6 @@ def ksb_duty_fixture():
             "description": "Test KSB description"
         })
         ksb_id = ksb_response.get_json()["id"]
-
         ksb_2_response = client.post("/ksb", json={
             "type": "Skill",
             "name": "Test KSB name 2",
@@ -70,14 +70,18 @@ def ksb_duty_fixture():
             "description": "Test duty description"
         })
         duty_id = duty_response.get_json()["id"]
-
         duty_2_response = client.post("/duties", json={
             "name": "Test duty name 2",
             "description": "Test duty description 2"
         })
         duty_2_id = duty_2_response.get_json()["id"]
+
+        ksb = KSB.get_by_id(ksb_id)
+        ksb_2 = KSB.get_by_id(ksb_2_id)
+        duty = Duties.get_by_id(duty_id)
+        duty_2 = Duties.get_by_id(duty_2_id)
         
-        yield client, ksb_id, duty_id, ksb_2_id, duty_2_id
+        yield client, ksb, duty, ksb_2, duty_2
 
         client.delete(f"/ksb/{ksb_id}")
         client.delete(f"/ksb/{ksb_2_id}")
