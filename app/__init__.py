@@ -1,6 +1,7 @@
 from flask import Flask
 from app.database import db
 from app.api.v1 import api_v1_bp
+from app.api.v2 import api_v2_bp
 
 def create_app():
     app = Flask(__name__)
@@ -16,5 +17,6 @@ def create_app():
             db.close()
 
     app.register_blueprint(api_v1_bp)
+    app.register_blueprint(api_v2_bp)
 
     return app
