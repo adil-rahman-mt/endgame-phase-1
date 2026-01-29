@@ -1,12 +1,12 @@
 from flask import Blueprint, jsonify, request
-from app.coins.models import Coins
-from app.duties.models import Duties
-from app.coin_duties.models import CoinDuties
+from app.api.v1.coins.models import Coins
+from app.api.v1.duties.models import Duties
+from app.api.v1.coin_duties.models import CoinDuties
 import uuid 
 from peewee import JOIN
 import peewee
 
-coins_bp = Blueprint("coins", __name__)
+coins_bp = Blueprint("coins", __name__, url_prefix="coins")
 
 # COINS
 

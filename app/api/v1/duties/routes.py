@@ -1,12 +1,12 @@
 from flask import Blueprint, jsonify, request
-from app.duties.models import Duties
-from app.ksb.models import KSB
-from app.ksb_duties.models import KsbDuties
+from app.api.v1.duties.models import Duties
+from app.api.v1.ksb.models import KSB
+from app.api.v1.ksb_duties.models import KsbDuties
 from peewee import JOIN
 import uuid 
 import peewee
 
-duties_bp = Blueprint("duties", __name__)
+duties_bp = Blueprint("duties", __name__, url_prefix="duties")
 
 # DUTIES
 

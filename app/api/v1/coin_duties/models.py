@@ -1,7 +1,7 @@
 from peewee import *
 from app.database import db
-from app.coins.models import Coins
-from app.duties.models import Duties
+from app.api.v1.coins.models import Coins
+from app.api.v1.duties.models import Duties
 
 class CoinDuties(Model):
     id = UUIDField(primary_key=True)

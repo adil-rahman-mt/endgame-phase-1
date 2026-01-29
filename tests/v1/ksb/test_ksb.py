@@ -23,21 +23,21 @@ def test_get_all_ksbs(client):
     mock_query = MagicMock()
     mock_query.dicts.return_value = mock_ksbs
 
-    with patch("app.ksb.models.KSB.select", return_value=mock_query):
-        response = client.get("/ksb")
+    with patch("app.api.v1.ksb.models.KSB.select", return_value=mock_query):
+        response = client.get("/api/v1/ksb")
     
     assert response.status_code == 200
     assert response.get_json() == mock_ksbs
 
 def test_get_ksb_by_id(client):
-    post_response = client.post("/ksb", json={
+    post_response = client.post("/api/v1/ksb", json={
             "type": KSB_TYPES["K"],
             "name": "Test name",
             "description": "Test description"
         })
     id_of_new_ksb = post_response.get_json()["id"]
-    get_response = client.get(f"/ksb/{id_of_new_ksb}")
-    client.delete(f"/ksb/{id_of_new_ksb}")
+    get_response = client.get(f"/api/v1/ksb/{id_of_new_ksb}")
+    client.delete(f"/api/v1/ksb/{id_of_new_ksb}")
     
     assert get_response.status_code == 200
     assert get_response.get_json() == {
@@ -48,7 +48,7 @@ def test_get_ksb_by_id(client):
     }
 
 def test_get_non_existent_ksb(client):
-    response = client.get(f"/ksb/{valid_uuid}")
+    response = client.get(f"/api/v1/ksb/{valid_uuid}")
     
     assert response.status_code == 404
     assert response.get_json() == {
@@ -57,7 +57,7 @@ def test_get_non_existent_ksb(client):
     }
 
 def test_get_ksb_with_invalid_id(client):
-    response = client.get(f"/ksb/{invalid_uuid}")
+    response = client.get(f"/api/v1/ksb/{invalid_uuid}")
     
     assert response.status_code == 400
     assert response.get_json() == {
@@ -80,8 +80,8 @@ def test_create_new_ksb(client):
     mock_model.name = "Mock KSB"
     mock_model.description = "Mock description"
 
-    with patch("app.ksb.models.KSB.create", return_value=mock_model):
-        response = client.post("/ksb", json={
+    with patch("app.api.v1.ksb.models.KSB.create", return_value=mock_model):
+        response = client.post("/api/v1/ksb", json={
                 "type": KSB_TYPES["K"],
                 "name": "Mock KSB",
                 "description": "Mock description"
@@ -91,18 +91,18 @@ def test_create_new_ksb(client):
     assert response.get_json() == mock_ksb
 
 def test_create_ksb_with_duplicate_name(client):
-    response_1 = client.post("/ksb", json={
+    response_1 = client.post("/api/v1/ksb", json={
             "type": KSB_TYPES["K"],
             "name": "Test name",
             "description": "Test description"
         })
     id_of_new_ksb = response_1.get_json()["id"]
-    duplicate_ksb_response = client.post("/ksb", json={
+    duplicate_ksb_response = client.post("/api/v1/ksb", json={
             "type": KSB_TYPES["K"],
             "name": "Test name",
             "description": "Test description 2"
         })
-    client.delete(f"/ksb/{id_of_new_ksb}")
+    client.delete(f"/api/v1/ksb/{id_of_new_ksb}")
     
     assert duplicate_ksb_response.status_code == 409
     assert duplicate_ksb_response.get_json() == {
@@ -111,18 +111,18 @@ def test_create_ksb_with_duplicate_name(client):
         }
 
 def test_create_ksb_with_duplicate_description(client):
-    response_1 = client.post("/ksb", json={
+    response_1 = client.post("/api/v1/ksb", json={
             "type": KSB_TYPES["K"],
             "name": "Test name",
             "description": "Test description"
         })
     id_of_new_ksb = response_1.get_json()["id"]
-    duplicate_ksb_response = client.post("/ksb", json={
+    duplicate_ksb_response = client.post("/api/v1/ksb", json={
             "type": KSB_TYPES["K"],
             "name": "Test name 2",
             "description": "Test description"
         })
-    client.delete(f"/ksb/{id_of_new_ksb}")
+    client.delete(f"/api/v1/ksb/{id_of_new_ksb}")
     
     assert duplicate_ksb_response.status_code == 409
     assert duplicate_ksb_response.get_json() == {
@@ -131,7 +131,7 @@ def test_create_ksb_with_duplicate_description(client):
         }
 
 def test_create_ksb_with_invalid_type(client):
-    response = client.post("/ksb", json={
+    response = client.post("/api/v1/ksb", json={
             "type": "Invalid KSB type",
             "name": "Test name",
             "description": "Test description"
@@ -144,7 +144,7 @@ def test_create_ksb_with_invalid_type(client):
         }
 
 def test_delete_existing_ksb(client):
-    post_response = client.post("/ksb", json={
+    post_response = client.post("/api/v1/ksb", json={
             "type": KSB_TYPES["K"],
             "name": "Test name",
             "description": "Test description"
@@ -153,7 +153,7 @@ def test_delete_existing_ksb(client):
     ksb_type = post_response.get_json()["type"]
     ksb_name = post_response.get_json()["name"]
     ksb_description = post_response.get_json()["description"]
-    delete_response = client.delete(f"/ksb/{ksb_id}")
+    delete_response = client.delete(f"/api/v1/ksb/{ksb_id}")
     
     assert delete_response.status_code == 200
     assert delete_response.get_json() == {
@@ -167,7 +167,7 @@ def test_delete_existing_ksb(client):
     }
 
 def test_delete_non_existing_ksb(client):
-    response = client.delete(f"/ksb/{valid_uuid}")
+    response = client.delete(f"/api/v1/ksb/{valid_uuid}")
     
     assert response.status_code == 404
     assert response.get_json() == {
@@ -176,7 +176,7 @@ def test_delete_non_existing_ksb(client):
     }
     
 def test_delete_ksb_with_invalid_id(client):
-    response = client.delete(f"/ksb/{invalid_uuid}")
+    response = client.delete(f"/api/v1/ksb/{invalid_uuid}")
     
     assert response.status_code == 400
     assert response.get_json() == {
@@ -185,18 +185,18 @@ def test_delete_ksb_with_invalid_id(client):
     }
 
 def test_update_existing_ksb(client):
-    post_response = client.post("/ksb", json={
+    post_response = client.post("/api/v1/ksb", json={
             "type": KSB_TYPES["K"],
             "name": "Test name",
             "description": "Test description"
         })
     id_of_new_ksb = post_response.get_json()["id"]
-    patch_response = client.patch(f"/ksb/{id_of_new_ksb}", json={
+    patch_response = client.patch(f"/api/v1/ksb/{id_of_new_ksb}", json={
             "type": KSB_TYPES["S"],
             "name": "Updated name",
             "description": "Updated description"
         })
-    client.delete(f"ksb/{id_of_new_ksb}")
+    client.delete(f"/api/v1/ksb/{id_of_new_ksb}")
     
     assert patch_response.status_code == 200
     assert patch_response.get_json() == {
@@ -207,7 +207,7 @@ def test_update_existing_ksb(client):
     }
 
 def test_update_non_existing_ksb(client):
-    response = client.patch(f"/ksb/{valid_uuid}", json={"name": "Updated ksb"})
+    response = client.patch(f"/api/v1/ksb/{valid_uuid}", json={"name": "Updated ksb"})
     
     assert response.status_code == 404
     assert response.get_json() == {
@@ -216,7 +216,7 @@ def test_update_non_existing_ksb(client):
     }
 
 def test_update_ksb_with_invalid_id(client):
-    response = client.patch(f"/ksb/{invalid_uuid}", json={"name": "Updated ksb"})
+    response = client.patch(f"/api/v1/ksb/{invalid_uuid}", json={"name": "Updated ksb"})
     
     assert response.status_code == 400
     assert response.get_json() == {
@@ -225,18 +225,18 @@ def test_update_ksb_with_invalid_id(client):
     }
 
 def test_update_ksb_with_invalid_type(client):    
-    post_response = client.post("/ksb", json={
+    post_response = client.post("/api/v1/ksb", json={
             "type": KSB_TYPES["K"],
             "name": "Test name",
             "description": "Test description"
         })
     id_of_new_ksb = post_response.get_json()["id"]
-    patch_response = client.patch(f"/ksb/{id_of_new_ksb}", json={
+    patch_response = client.patch(f"/api/v1/ksb/{id_of_new_ksb}", json={
             "type": "Invalid KSB type",
             "name": "Updated name",
             "description": "Updated description"
         })
-    client.delete(f"ksb/{id_of_new_ksb}")
+    client.delete(f"/api/v1/ksb/{id_of_new_ksb}")
     
     assert patch_response.status_code == 400
     assert patch_response.get_json() == {

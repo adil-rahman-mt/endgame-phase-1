@@ -1,5 +1,5 @@
 from app.database import db
-from app.ksb_duties.models import KsbDuties
+from app.api.v1.ksb_duties.models import KsbDuties
 
 db.connect()
 db.create_tables([KsbDuties])

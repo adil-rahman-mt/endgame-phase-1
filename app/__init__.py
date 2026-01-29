@@ -1,8 +1,6 @@
 from flask import Flask
 from app.database import db
-from app.coins.routes import coins_bp
-from app.duties.routes import duties_bp
-from app.ksb.routes import ksb_bp
+from app.api.v1 import api_v1_bp
 
 def create_app():
     app = Flask(__name__)
@@ -17,8 +15,6 @@ def create_app():
         if not db.is_closed():
             db.close()
 
-    app.register_blueprint(coins_bp, url_prefix="/coins")
-    app.register_blueprint(duties_bp, url_prefix="/duties")
-    app.register_blueprint(ksb_bp, url_prefix="/ksb")
+    app.register_blueprint(api_v1_bp)
 
     return app
