@@ -226,13 +226,11 @@ def test_get_all_ksb_for_invalid_duty(client):
 def test_add_ksb_to_duty(ksb_duty_fixture):
     client, ksb, duty, *rest = ksb_duty_fixture
     add_ksb_to_duty_response = client.post(f"/api/v1/duties/{duty.id}/ksb/{ksb.id}")
-    id = add_ksb_to_duty_response.get_json()["id"]
     
     assert add_ksb_to_duty_response.status_code == 201
     assert add_ksb_to_duty_response.get_json() == {
-        'id': id,
-        'duty_id': str(duty.id),
-        'ksb_id': str(ksb.id),
+        'duty_name': duty.name,
+        'ksb_name': ksb.name,
     }
 
 def test_duplication_of_adding_ksb_to_duty(ksb_duty_fixture):

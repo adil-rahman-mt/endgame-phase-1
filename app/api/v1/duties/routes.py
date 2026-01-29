@@ -149,9 +149,8 @@ def add_ksb_to_duty(duty_id, ksb_id):
                 ksb_id = ksb_id,
             )
         return jsonify({
-            'id': record.id,
-            'duty_id': record.duty_id.id,
-            'ksb_id': record.ksb_id.id,
+            'duty_name': record.duty_id.name,
+            'ksb_name': record.ksb_id.name,
         }), 201
     except peewee.IntegrityError as err:
         if "already exists" in err.args[0]:
