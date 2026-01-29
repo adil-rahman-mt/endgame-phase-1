@@ -1,8 +1,8 @@
 import pytest
 from app import create_app
-from app.api.v1.coins.models import Coins
-from app.api.v1.duties.models import Duties
-from app.api.v1.ksb.models import KSB
+from app.models.coins import Coins
+from app.models.duties import Duties
+from app.models.ksb import KSB
 
 @pytest.fixture
 def client():

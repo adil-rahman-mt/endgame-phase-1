@@ -18,7 +18,7 @@ def test_get_all_duties(client):
     mock_query = MagicMock()
     mock_query.dicts.return_value = mock_duties
 
-    with patch("app.api.v1.duties.models.Duties.select", return_value=mock_query):
+    with patch("app.api.v1.duties.routes.Duties.select", return_value=mock_query):
         response = client.get("/api/v1/duties")
     
     assert response.status_code == 200
@@ -71,7 +71,7 @@ def test_create_new_duty(client):
     mock_model.name = "Mock duty"
     mock_model.description = "Mock description"
 
-    with patch("app.api.v1.duties.models.Duties.create", return_value=mock_model):
+    with patch("app.api.v1.duties.routes.Duties.create", return_value=mock_model):
         response = client.post("/api/v1/duties", json={
                 "name": "Mock duty",
                 "description": "Mock description"

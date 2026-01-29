@@ -17,7 +17,7 @@ def test_get_all_coins(client):
     mock_query = MagicMock()
     mock_query.dicts.return_value = mock_coins
 
-    with patch("app.api.v1.coins.models.Coins.select", return_value=mock_query):
+    with patch("app.api.v1.coins.routes.Coins.select", return_value=mock_query):
         response = client.get("/api/v1/coins")
     
     assert response.status_code == 200
@@ -64,7 +64,7 @@ def test_create_new_coin(client):
     mock_model.id = mock_id
     mock_model.name = "Mock coin"
 
-    with patch("app.api.v1.coins.models.Coins.create", return_value=mock_model):
+    with patch("app.api.v1.coins.routes.Coins.create", return_value=mock_model):
         response = client.post("/api/v1/coins", json={"name": "Mock coin"})
     
     assert response.status_code == 201

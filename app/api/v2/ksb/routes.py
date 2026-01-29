@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
-from app.api.v1.duties.models import Duties
-from app.api.v1.ksb.models import KSB
-from app.api.v1.ksb_duties.models import KsbDuties
+from app.models.duties import Duties
+from app.models.ksb import KSB
+from app.models.ksb_duties import KsbDuties
 from peewee import JOIN
 import peewee
 

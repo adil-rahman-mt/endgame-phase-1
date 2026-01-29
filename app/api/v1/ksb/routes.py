@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from app.api.v1.ksb.models import KSB
+from app.models.ksb import KSB
 import uuid 
 import peewee
 

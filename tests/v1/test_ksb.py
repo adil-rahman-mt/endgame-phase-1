@@ -23,7 +23,7 @@ def test_get_all_ksbs(client):
     mock_query = MagicMock()
     mock_query.dicts.return_value = mock_ksbs
 
-    with patch("app.api.v1.ksb.models.KSB.select", return_value=mock_query):
+    with patch("app.api.v1.ksb.routes.KSB.select", return_value=mock_query):
         response = client.get("/api/v1/ksb")
     
     assert response.status_code == 200
@@ -80,7 +80,7 @@ def test_create_new_ksb(client):
     mock_model.name = "Mock KSB"
     mock_model.description = "Mock description"
 
-    with patch("app.api.v1.ksb.models.KSB.create", return_value=mock_model):
+    with patch("app.api.v1.ksb.routes.KSB.create", return_value=mock_model):
         response = client.post("/api/v1/ksb", json={
                 "type": KSB_TYPES["K"],
                 "name": "Mock KSB",
