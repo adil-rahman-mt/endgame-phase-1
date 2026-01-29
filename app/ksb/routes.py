@@ -24,7 +24,7 @@ def get_ksb_by_id(id):
         return jsonify({
             'error': "Database error",
             'message': f"KSB with ID = {id} does not exist"
-        }), 400
+        }), 404
     except peewee.DataError:
         return jsonify({
             'error': "Invalid ID format",
@@ -61,7 +61,7 @@ def create_new_ksb():
         return jsonify({
             'error': "Duplication error",
             'message': f"A KSB with {err.args[0].split(':  ')[-1][4:-17]} already exists",
-        }), 400
+        }), 409
 
 @ksb_bp.delete('/<id>')
 def delete_a_ksb(id):
@@ -81,7 +81,7 @@ def delete_a_ksb(id):
         return jsonify({
             'error': "Database error",
             'message': f"KSB with ID = {id} does not exist"
-        }), 400
+        }), 404
     except peewee.DataError:
         return jsonify({
             'error': "Invalid ID format",
@@ -123,7 +123,7 @@ def update_a_ksb(id):
         return jsonify({
             'error': "Database error",
             'message': f"KSB with ID = {id} does not exist"
-        }), 400
+        }), 404
     except peewee.DataError:
         return jsonify({
             'error': "Invalid ID format",

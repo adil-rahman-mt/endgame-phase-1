@@ -33,6 +33,7 @@ def test_get_duty_by_id(client):
     get_response = client.get(f"/duties/{id_of_new_duty}")
     client.delete(f"/duties/{id_of_new_duty}")
     
+    assert get_response.status_code == 200
     assert get_response.get_json() == {
         "id": id_of_new_duty,
         "name": "Test name",
@@ -42,6 +43,7 @@ def test_get_duty_by_id(client):
 def test_get_non_existent_duty(client):
     response = client.get(f"/duties/{valid_uuid}")
     
+    assert response.status_code == 404
     assert response.get_json() == {
         'error': "Database error",
         'message': f"Duty with ID = {valid_uuid} does not exist"
@@ -50,6 +52,7 @@ def test_get_non_existent_duty(client):
 def test_get_duty_with_invalid_id(client):
     response = client.get(f"/duties/{invalid_uuid}")
     
+    assert response.status_code == 400
     assert response.get_json() == {
         'error': "Invalid ID format",
         'message': "The provided ID must be a valid UUID"
@@ -89,7 +92,7 @@ def test_create_duty_with_duplicate_name(client):
         })
     client.delete(f"/duties/{id_of_new_duty}")
     
-    assert duplicate_duty_response.status_code == 400
+    assert duplicate_duty_response.status_code == 409
     assert duplicate_duty_response.get_json() == {
             'error': "Duplication error",
             'message': "A duty with (name)=(Test name) already exists"
@@ -107,7 +110,7 @@ def test_create_duty_with_duplicate_description(client):
         })
     client.delete(f"/duties/{id_of_new_duty}")
     
-    assert duplicate_duty_response.status_code == 400
+    assert duplicate_duty_response.status_code == 409
     assert duplicate_duty_response.get_json() == {
             'error': "Duplication error",
             'message': "A duty with (description)=(Test description) already exists"
@@ -123,6 +126,7 @@ def test_delete_existing_duty(client):
     duty_description = post_response.get_json()["description"]
     delete_response = client.delete(f"/duties/{duty_id}")
     
+    assert delete_response.status_code == 200
     assert delete_response.get_json() == {
         "status": "Success",
         "deleted": {
@@ -135,6 +139,7 @@ def test_delete_existing_duty(client):
 def test_delete_non_existing_duty(client):
     response = client.delete(f"/duties/{valid_uuid}")
     
+    assert response.status_code == 404
     assert response.get_json() == {
         'error': "Database error",
         'message': f"Duty with ID = {valid_uuid} does not exist"
@@ -143,6 +148,7 @@ def test_delete_non_existing_duty(client):
 def test_delete_duty_with_invalid_id(client):
     response = client.delete(f"/duties/{invalid_uuid}")
     
+    assert response.status_code == 400
     assert response.get_json() == {
         'error': "Invalid ID format",
         'message': "The provided ID must be a valid UUID"
@@ -160,6 +166,7 @@ def test_update_existing_duty(client):
         })
     client.delete(f"duties/{id_of_new_duty}")
     
+    assert patch_response.status_code == 200
     assert patch_response.get_json() == {
         "id": id_of_new_duty,
         "name": "Updated name",
@@ -169,6 +176,7 @@ def test_update_existing_duty(client):
 def test_update_non_existing_duty(client):
     response = client.patch(f"/duties/{valid_uuid}", json={"name": "Updated duty"})
     
+    assert response.status_code == 404
     assert response.get_json() == {
         'error': "Database error",
         'message': f"Duty with ID = {valid_uuid} does not exist"
@@ -177,6 +185,7 @@ def test_update_non_existing_duty(client):
 def test_update_duty_with_invalid_id(client):
     response = client.patch(f"/duties/{invalid_uuid}", json={"name": "Updated duty"})
     
+    assert response.status_code == 400
     assert response.get_json() == {
         'error': "Invalid ID format",
         'message': "The provided ID must be a valid UUID"
@@ -190,6 +199,7 @@ def test_get_all_ksb_for_duty(ksb_duty_fixture):
     get_ksb_for_duty_response = client.get(f"/duties/{duty.id}/ksb")
     client.delete(f"/duties/{duty.id}/ksb/{ksb.id}")
     
+    assert get_ksb_for_duty_response.status_code == 200
     assert get_ksb_for_duty_response.get_json() == {
         'Duty': duty.name,
         'linked_to': [ksb.name]
@@ -198,6 +208,7 @@ def test_get_all_ksb_for_duty(ksb_duty_fixture):
 def test_get_all_ksb_for_non_existent_duty(client):
     response = client.get(f"/duties/{valid_uuid}/ksb")
     
+    assert response.status_code == 404
     assert response.get_json() == {
         'error': "Database error",
         'message': f"A duty with ID = {valid_uuid} does not exist"
@@ -206,6 +217,7 @@ def test_get_all_ksb_for_non_existent_duty(client):
 def test_get_all_ksb_for_invalid_duty(client):
     response = client.get(f"/duties/{invalid_uuid}/ksb")
     
+    assert response.status_code == 400
     assert response.get_json() == {
         'error': "Invalid ID format",
         'message': "The provided duty ID must be a valid UUID"
@@ -216,6 +228,7 @@ def test_add_ksb_to_duty(ksb_duty_fixture):
     add_ksb_to_duty_response = client.post(f"/duties/{duty.id}/ksb/{ksb.id}")
     id = add_ksb_to_duty_response.get_json()["id"]
     
+    assert add_ksb_to_duty_response.status_code == 201
     assert add_ksb_to_duty_response.get_json() == {
         'id': id,
         'duty_id': str(duty.id),

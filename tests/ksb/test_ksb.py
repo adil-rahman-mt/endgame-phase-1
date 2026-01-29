@@ -50,7 +50,7 @@ def test_get_ksb_by_id(client):
 def test_get_non_existent_ksb(client):
     response = client.get(f"/ksb/{valid_uuid}")
     
-    assert response.status_code == 400
+    assert response.status_code == 404
     assert response.get_json() == {
         'error': "Database error",
         'message': f"KSB with ID = {valid_uuid} does not exist"
@@ -104,7 +104,7 @@ def test_create_ksb_with_duplicate_name(client):
         })
     client.delete(f"/ksb/{id_of_new_ksb}")
     
-    assert duplicate_ksb_response.status_code == 400
+    assert duplicate_ksb_response.status_code == 409
     assert duplicate_ksb_response.get_json() == {
             'error': "Duplication error",
             'message': "A KSB with (name)=(Test name) already exists"
@@ -124,7 +124,7 @@ def test_create_ksb_with_duplicate_description(client):
         })
     client.delete(f"/ksb/{id_of_new_ksb}")
     
-    assert duplicate_ksb_response.status_code == 400
+    assert duplicate_ksb_response.status_code == 409
     assert duplicate_ksb_response.get_json() == {
             'error': "Duplication error",
             'message': "A KSB with (description)=(Test description) already exists"
@@ -169,7 +169,7 @@ def test_delete_existing_ksb(client):
 def test_delete_non_existing_ksb(client):
     response = client.delete(f"/ksb/{valid_uuid}")
     
-    assert response.status_code == 400
+    assert response.status_code == 404
     assert response.get_json() == {
         'error': "Database error",
         'message': f"KSB with ID = {valid_uuid} does not exist"
@@ -209,7 +209,7 @@ def test_update_existing_ksb(client):
 def test_update_non_existing_ksb(client):
     response = client.patch(f"/ksb/{valid_uuid}", json={"name": "Updated ksb"})
     
-    assert response.status_code == 400
+    assert response.status_code == 404
     assert response.get_json() == {
         'error': "Database error",
         'message': f"KSB with ID = {valid_uuid} does not exist"

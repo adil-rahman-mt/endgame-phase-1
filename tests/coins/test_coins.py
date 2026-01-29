@@ -29,6 +29,7 @@ def test_get_coin_by_id(client):
     get_response = client.get(f"/coins/{id_of_new_coin}")
     client.delete(f"/coins/{id_of_new_coin}")
     
+    assert get_response.status_code == 200
     assert get_response.get_json() == {
         "id": id_of_new_coin,
         "name": "Test coin 1",
@@ -37,6 +38,7 @@ def test_get_coin_by_id(client):
 def test_get_non_existent_coin(client):
     response = client.get(f"/coins/{valid_uuid}")
     
+    assert response.status_code == 404
     assert response.get_json() == {
         'error': "Database error",
         'message': f"Coin with ID = {valid_uuid} does not exist"
@@ -45,6 +47,7 @@ def test_get_non_existent_coin(client):
 def test_get_coin_with_invalid_id(client):
     response = client.get(f"/coins/{invalid_uuid}")
     
+    assert response.status_code == 400
     assert response.get_json() == {
         'error': "Invalid ID format",
         'message': "The provided ID must be a valid UUID"
@@ -73,7 +76,7 @@ def test_create_duplicate_coin(client):
     duplicate_coin_response = client.post("/coins", json={"name": "Test coin 1"})
     client.delete(f"/coins/{id_of_new_coin}")
     
-    assert duplicate_coin_response.status_code == 400
+    assert duplicate_coin_response.status_code == 409
     assert duplicate_coin_response.get_json() == {
             'error': "Duplication error",
             'message': "Test coin 1 already exists"
@@ -85,6 +88,7 @@ def test_delete_existing_coin(client):
     coin_name = post_response.get_json()["name"]
     delete_response = client.delete(f"/coins/{coin_id}")
     
+    assert delete_response.status_code == 200
     assert delete_response.get_json() == {
         "status": "Success",
         "deleted": {
@@ -96,6 +100,7 @@ def test_delete_existing_coin(client):
 def test_delete_non_existing_coin(client):
     response = client.delete(f"/coins/{valid_uuid}")
     
+    assert response.status_code == 404
     assert response.get_json() == {
         'error': "Database error",
         'message': f"Coin with ID = {valid_uuid} does not exist"
@@ -104,6 +109,7 @@ def test_delete_non_existing_coin(client):
 def test_delete_coin_with_invalid_id(client):
     response = client.delete(f"/coins/{invalid_uuid}")
     
+    assert response.status_code == 400
     assert response.get_json() == {
         'error': "Invalid ID format",
         'message': "The provided ID must be a valid UUID"
@@ -115,6 +121,7 @@ def test_update_existing_coin(client):
     patch_response = client.patch(f"/coins/{id_of_new_coin}", json={"name": "Updated test coin"})
     client.delete(f"coins/{id_of_new_coin}")
     
+    assert patch_response.status_code == 200
     assert patch_response.get_json() == {
         "id": id_of_new_coin,
         "name": "Updated test coin"
@@ -123,6 +130,7 @@ def test_update_existing_coin(client):
 def test_update_non_existing_coin(client):
     response = client.patch(f"/coins/{valid_uuid}", json={"name": "Updated coin"})
     
+    assert response.status_code == 404
     assert response.get_json() == {
         'error': "Database error",
         'message': f"Coin with ID = {valid_uuid} does not exist"
@@ -131,6 +139,7 @@ def test_update_non_existing_coin(client):
 def test_update_coin_with_invalid_id(client):
     response = client.patch(f"/coins/{invalid_uuid}", json={"name": "Updated coin"})
     
+    assert response.status_code == 400
     assert response.get_json() == {
         'error': "Invalid ID format",
         'message': "The provided ID must be a valid UUID"
@@ -144,6 +153,7 @@ def test_get_all_duties_for_coin(coin_duty_fixture):
     get_duties_for_coin_response = client.get(f"/coins/{coin.id}/duties")
     client.delete(f"/coins/{coin.id}/duties/{duty.id}")
     
+    assert get_duties_for_coin_response.status_code == 200
     assert get_duties_for_coin_response.get_json() == {
         'Coin': coin.name,
         'linked_to': [duty.name]
@@ -152,14 +162,16 @@ def test_get_all_duties_for_coin(coin_duty_fixture):
 def test_get_all_duties_for_non_existent_coin(client):
     response = client.get(f"/coins/{valid_uuid}/duties")
     
+    assert response.status_code == 404
     assert response.get_json() == {
         'error': "Database error",
         'message': f"A coin with ID = {valid_uuid} does not exist"
     }
 
-def test_get_all_duties_for_invalid_coin_id(client):
+def test_get_all_duties_for_invalid_coin(client):
     response = client.get(f"/coins/{invalid_uuid}/duties")
     
+    assert response.status_code == 400
     assert response.get_json() == {
         'error': "Invalid ID format",
         'message': "The provided coin ID must be a valid UUID"
@@ -170,6 +182,7 @@ def test_add_duty_to_coin(coin_duty_fixture):
     add_duty_to_coin_response = client.post(f"/coins/{coin.id}/duties/{duty.id}")
     id = add_duty_to_coin_response.get_json()["id"]
     
+    assert add_duty_to_coin_response.status_code == 201
     assert add_duty_to_coin_response.get_json() == {
         'id': id,
         'coin_id': str(coin.id),
@@ -181,7 +194,7 @@ def test_duplication_of_adding_duty_to_coin(coin_duty_fixture):
     add_duty_to_coin_response = client.post(f"/coins/{coin.id}/duties/{duty.id}")
     duplicate_response = client.post(f"/coins/{coin.id}/duties/{duty.id}")
     
-    assert duplicate_response.status_code == 400
+    assert duplicate_response.status_code == 409
     assert duplicate_response.get_json() == {
         'error': "Duplication error",
         'message': f"{duty.name} is already associated with {coin.name}"
@@ -191,7 +204,7 @@ def test_add_duty_to_non_existent_coin(coin_duty_fixture):
     client, _, duty, *rest = coin_duty_fixture
     add_duty_to_coin_response = client.post(f"/coins/{valid_uuid}/duties/{duty.id}")
 
-    assert add_duty_to_coin_response.status_code == 400
+    assert add_duty_to_coin_response.status_code == 404
     assert add_duty_to_coin_response.get_json() == {
         'error': "Invalid ID",
         'message': f"A coin with ID = {valid_uuid} does not exist"
@@ -201,7 +214,7 @@ def test_add_non_existent_duty_to_coin(coin_duty_fixture):
     client, coin, *rest = coin_duty_fixture
     add_duty_to_coin_response = client.post(f"/coins/{coin.id}/duties/{valid_uuid}")
 
-    assert add_duty_to_coin_response.status_code == 400
+    assert add_duty_to_coin_response.status_code == 404
     assert add_duty_to_coin_response.get_json() == {
         'error': "Invalid ID",
         'message': f"A duty with ID = {valid_uuid} does not exist"
@@ -235,14 +248,14 @@ def test_remove_duty_from_coin(coin_duty_fixture):
     assert remove_duty_from_coin_response.status_code == 200
     assert remove_duty_from_coin_response.get_json() == {
         'status': "Success",
-        'message': f"Deleted {duty.name} from {coin.name}",
+        'message': f"Removed {duty.name} from {coin.name}",
     }
 
 def test_remove_duty_from_non_existent_coin(coin_duty_fixture):
     client, _, duty, *rest = coin_duty_fixture
     remove_response = client.delete(f"/coins/{valid_uuid}/duties/{duty.id}")
 
-    assert remove_response.status_code == 400
+    assert remove_response.status_code == 404
     assert remove_response.get_json() == {
         'error': "Invalid ID",
         'message': f"A coin with ID = {valid_uuid} does not exist"
@@ -252,7 +265,7 @@ def test_remove_non_existent_duty_from_coin(coin_duty_fixture):
     client, coin, *rest = coin_duty_fixture
     remove_response = client.delete(f"/coins/{coin.id}/duties/{valid_uuid}")
 
-    assert remove_response.status_code == 400
+    assert remove_response.status_code == 404
     assert remove_response.get_json() == {
         'error': "Invalid ID",
         'message': f"A duty with ID = {valid_uuid} does not exist"
@@ -262,7 +275,7 @@ def test_remove_duty_that_is_unassociated_with_coin(coin_duty_fixture):
     client, coin, duty, *rest = coin_duty_fixture
     remove_response = client.delete(f"/coins/{coin.id}/duties/{duty.id}")
 
-    assert remove_response.status_code == 400
+    assert remove_response.status_code == 404
     assert remove_response.get_json() == {
         'error': "Record does not exist",
         'message': f"{duty.name} is not associated with {coin.name}"

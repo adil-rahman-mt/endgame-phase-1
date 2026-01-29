@@ -27,7 +27,7 @@ def get_coin_by_id(id):
         return jsonify({
             'error': "Database error",
             'message': f"Coin with ID = {id} does not exist"
-        }), 400
+        }), 404
     except peewee.DataError:
         return jsonify({
             'error': "Invalid ID format",
@@ -54,7 +54,7 @@ def create_new_coin():
         return jsonify({
             'error': "Duplication error",
             'message': f"{data['name']} already exists"
-        }), 400
+        }), 409
 
 @coins_bp.delete('/<id>')
 def delete_a_coin(id):
@@ -72,7 +72,7 @@ def delete_a_coin(id):
         return jsonify({
             'error': "Database error",
             'message': f"Coin with ID = {id} does not exist"
-        }), 400
+        }), 404
     except peewee.DataError:
         return jsonify({
             'error': "Invalid ID format",
@@ -95,7 +95,7 @@ def update_a_coin(id):
         return jsonify({
             'error': "Database error",
             'message': f"Coin with ID = {id} does not exist"
-        }), 400
+        }), 404
     except peewee.DataError:
         return jsonify({
             'error': "Invalid ID format",
@@ -119,7 +119,7 @@ def get_all_duties_for_coin(coin_id):
         return jsonify({
             'error': "Database error",
             'message': f"A coin with ID = {coin_id} does not exist"
-        }), 400
+        }), 404
     except peewee.DataError:
         return jsonify({
             'error': "Invalid ID format",
@@ -146,18 +146,18 @@ def add_duty_to_coin(coin_id, duty_id):
             return jsonify({
                 'error': "Duplication error",
                 'message': f"{duty.name} is already associated with {coin.name}"
-            }), 400
+            }), 409
     except peewee.DoesNotExist as err:
         if "Model: Coins" in err.args[0]:
             return jsonify({
                 'error': "Invalid ID",
                 'message': f"A coin with ID = {coin_id} does not exist"
-            }), 400
+            }), 404
         if "Model: Duties" in err.args[0]:
             return jsonify({
                 'error': "Invalid ID",
                 'message': f"A duty with ID = {duty_id} does not exist"
-            }), 400
+            }), 404
         return jsonify({
                 'error': "Unknown error",
             }), 400
@@ -179,23 +179,23 @@ def remove_duty_from_coin(coin_id, duty_id):
         record.delete_instance()
         return jsonify({
                 'status': "Success",
-                'message': f"Deleted {duty_name} from {coin_name}",
+                'message': f"Removed {duty_name} from {coin_name}",
             }), 200
     except peewee.DoesNotExist as err:
         if "Model: Coins" in err.args[0]:
             return jsonify({
                 'error': "Invalid ID",
                 'message': f"A coin with ID = {coin_id} does not exist"
-            }), 400
+            }), 404
         if "Model: Duties" in err.args[0]:
             return jsonify({
                 'error': "Invalid ID",
                 'message': f"A duty with ID = {duty_id} does not exist"
-            }), 400
+            }), 404
         return jsonify({
                 'error': "Record does not exist",
                 'message': f"{duty_name} is not associated with {coin_name}"
-            }), 400
+            }), 404
     except peewee.DataError as err:
         return jsonify({
             'error': "Invalid ID format",

@@ -28,7 +28,7 @@ def get_duty_by_id(id):
         return jsonify({
             'error': "Database error",
             'message': f"Duty with ID = {id} does not exist"
-        }), 400
+        }), 404
     except peewee.DataError:
         return jsonify({
             'error': "Invalid ID format",
@@ -57,7 +57,7 @@ def create_new_duty():
         return jsonify({
             'error': "Duplication error",
             'message': f"A duty with {err.args[0].split(':  ')[-1][4:-17]} already exists",
-        }), 400
+        }), 409
 
 @duties_bp.delete('/<id>')
 def delete_a_duty(id):
@@ -76,7 +76,7 @@ def delete_a_duty(id):
         return jsonify({
             'error': "Database error",
             'message': f"Duty with ID = {id} does not exist"
-        }), 400
+        }), 404
     except peewee.DataError:
         return jsonify({
             'error': "Invalid ID format",
@@ -107,7 +107,7 @@ def update_a_duty(id):
         return jsonify({
             'error': "Database error",
             'message': f"Duty with ID = {id} does not exist"
-        }), 400
+        }), 404
     except peewee.DataError:
         return jsonify({
             'error': "Invalid ID format",
