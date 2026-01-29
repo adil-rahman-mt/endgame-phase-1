@@ -35,7 +35,7 @@ def get_coin_by_id(id):
         }), 400
 
 @coins_bp.post('')
-def create_new_coin():
+def create_coin():
     data = request.get_json()
 
     if not data or 'name' not in data:
@@ -57,7 +57,7 @@ def create_new_coin():
         }), 409
 
 @coins_bp.delete('/<id>')
-def delete_a_coin(id):
+def delete_coin(id):
     try:
         coin_to_delete = Coins.get_by_id(id)
         coin_to_delete.delete_instance()
@@ -80,7 +80,7 @@ def delete_a_coin(id):
         }), 400
 
 @coins_bp.patch('/<id>')
-def update_a_coin(id):
+def update_coin(id):
     try:
         data = request.get_json()
         coin = Coins.get(Coins.id == f"{id}")
@@ -107,13 +107,13 @@ def update_a_coin(id):
 @coins_bp.get('/<coin_id>/duties')
 def get_all_duties_for_coin(coin_id):
     try:
-        query = (Duties
+        query_for_duties = (Duties
             .select(Duties.name)
             .join(CoinDuties, JOIN.INNER)
             .where(CoinDuties.coin_id == coin_id))
         return jsonify({
                 'Coin': Coins.get_by_id(coin_id).name,
-                'linked_to': [duty.name for duty in query]
+                'linked_to': [duty.name for duty in query_for_duties]
             }), 200
     except peewee.DoesNotExist:
         return jsonify({
@@ -131,14 +131,14 @@ def add_duty_to_coin(coin_id, duty_id):
     try:
         coin = Coins.get_by_id(coin_id)
         duty = Duties.get_by_id(duty_id)
-        record = CoinDuties.create(
+        new_coin_duty_record = CoinDuties.create(
                 id=uuid.uuid4(),
                 coin_id = coin_id,
                 duty_id = duty_id,
             )
         return jsonify({
-            'coin_name': record.coin_id.name,
-            'duty_name': record.duty_id.name,
+            'coin_name': new_coin_duty_record.coin_id.name,
+            'duty_name': new_coin_duty_record.duty_id.name,
         }), 201
     except peewee.IntegrityError as err:
         if "already exists" in err.args[0]:
@@ -174,8 +174,8 @@ def remove_duty_from_coin(coin_id, duty_id):
         Duties.get_by_id(duty_id)
         duty_name = Duties.get_by_id(duty_id).name
 
-        record = CoinDuties.get(CoinDuties.coin_id == coin_id, CoinDuties.duty_id == duty_id)
-        record.delete_instance()
+        record_to_delete = CoinDuties.get(CoinDuties.coin_id == coin_id, CoinDuties.duty_id == duty_id)
+        record_to_delete.delete_instance()
         return jsonify({
                 'status': "Success",
                 'message': f"Removed {duty_name} from {coin_name}",

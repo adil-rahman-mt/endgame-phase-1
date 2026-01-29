@@ -32,7 +32,7 @@ def get_ksb_by_id(id):
         }), 400
 
 @ksb_bp.post('')
-def create_new_ksb():
+def create_ksb():
     data = request.get_json()
 
     if not data or 'type' not in data or 'name' not in data or 'description' not in data:
@@ -64,7 +64,7 @@ def create_new_ksb():
         }), 409
 
 @ksb_bp.delete('/<id>')
-def delete_a_ksb(id):
+def delete_ksb(id):
     try:
         ksb_to_delete = KSB.get_by_id(id)
         ksb_to_delete.delete_instance()
@@ -89,7 +89,7 @@ def delete_a_ksb(id):
         }), 400
 
 @ksb_bp.patch('/<id>')
-def update_a_ksb(id):
+def update_ksb(id):
     try:
         data = request.get_json()
         ksb = KSB.get(KSB.id == f"{id}")

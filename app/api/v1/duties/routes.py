@@ -36,7 +36,7 @@ def get_duty_by_id(id):
         }), 400
 
 @duties_bp.post('')
-def create_new_duty():
+def create_duty():
     data = request.get_json()
 
     if not data or 'name' not in data or 'description' not in data:
@@ -60,7 +60,7 @@ def create_new_duty():
         }), 409
 
 @duties_bp.delete('/<id>')
-def delete_a_duty(id):
+def delete_duty(id):
     try:
         duty_to_delete = Duties.get_by_id(id)
         duty_to_delete.delete_instance()
@@ -84,7 +84,7 @@ def delete_a_duty(id):
         }), 400
 
 @duties_bp.patch('/<id>')
-def update_a_duty(id):
+def update_duty(id):
     try:
         data = request.get_json()
         duty = Duties.get(Duties.id == f"{id}")
@@ -119,13 +119,13 @@ def update_a_duty(id):
 @duties_bp.get('/<duty_id>/ksb')
 def get_all_ksb_for_duty(duty_id):
     try:
-        query = (KSB
+        query_for_ksb = (KSB
             .select(KSB.name)
             .join(KsbDuties, JOIN.INNER)
             .where(KsbDuties.duty_id == duty_id))
         return jsonify({
                 'Duty': Duties.get_by_id(duty_id).name,
-                'linked_to': [ksb.name for ksb in query]
+                'linked_to': [ksb.name for ksb in query_for_ksb]
             }), 200
     except peewee.DoesNotExist:
         return jsonify({
@@ -143,14 +143,14 @@ def add_ksb_to_duty(duty_id, ksb_id):
     try:
         duty = Duties.get_by_id(duty_id)
         ksb = KSB.get_by_id(ksb_id)
-        record = KsbDuties.create(
+        new_ksb_duty_record = KsbDuties.create(
                 id=uuid.uuid4(),
                 duty_id = duty_id,
                 ksb_id = ksb_id,
             )
         return jsonify({
-            'duty_name': record.duty_id.name,
-            'ksb_name': record.ksb_id.name,
+            'duty_name': new_ksb_duty_record.duty_id.name,
+            'ksb_name': new_ksb_duty_record.ksb_id.name,
         }), 201
     except peewee.IntegrityError as err:
         if "already exists" in err.args[0]:
@@ -186,8 +186,8 @@ def remove_duty_from_coin(duty_id, ksb_id):
         KSB.get_by_id(ksb_id)
         ksb_name = KSB.get_by_id(ksb_id).name
 
-        record = KsbDuties.get(KsbDuties.ksb_id == ksb_id, KsbDuties.duty_id == duty_id)
-        record.delete_instance()
+        record_to_delete = KsbDuties.get(KsbDuties.ksb_id == ksb_id, KsbDuties.duty_id == duty_id)
+        record_to_delete.delete_instance()
         return jsonify({
                 'status': "Success",
                 'message': f"Removed {ksb_name} from {duty_name}",
