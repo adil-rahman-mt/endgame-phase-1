@@ -137,9 +137,8 @@ def add_duty_to_coin(coin_id, duty_id):
                 duty_id = duty_id,
             )
         return jsonify({
-            'id': record.id,
-            'coin_id': record.coin_id.id,
-            'duty_id': record.duty_id.id,
+            'coin_name': record.coin_id.name,
+            'duty_name': record.duty_id.name,
         }), 201
     except peewee.IntegrityError as err:
         if "already exists" in err.args[0]:

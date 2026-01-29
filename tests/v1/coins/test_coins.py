@@ -180,13 +180,11 @@ def test_get_all_duties_for_invalid_coin(client):
 def test_add_duty_to_coin(coin_duty_fixture):
     client, coin, duty, *rest = coin_duty_fixture
     add_duty_to_coin_response = client.post(f"/api/v1/coins/{coin.id}/duties/{duty.id}")
-    id = add_duty_to_coin_response.get_json()["id"]
     
     assert add_duty_to_coin_response.status_code == 201
     assert add_duty_to_coin_response.get_json() == {
-        'id': id,
-        'coin_id': str(coin.id),
-        'duty_id': str(duty.id),
+        'coin_name': coin.name,
+        'duty_name': duty.name,
     }
 
 def test_duplication_of_adding_duty_to_coin(coin_duty_fixture):
