@@ -1,9 +1,27 @@
 from app import create_app
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+import limits.storage
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+options = {}
+redis_storage = limits.storage.storage_from_string(os.environ.get('REDIS_STORAGE_URI'), **options)
 
 app = create_app()
 
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["5 per 30 second"],
+    storage_uri=os.environ.get('REDIS_STORAGE_URI'),
+    strategy="fixed-window",
+)
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
 
 @app.route('/')
 def home():
