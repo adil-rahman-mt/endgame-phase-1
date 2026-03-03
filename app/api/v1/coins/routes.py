@@ -5,10 +5,14 @@ from app.models.coin_duties import CoinDuties
 import uuid 
 from peewee import JOIN
 import peewee
+from pydantic import BaseModel, ValidationError
 
 coins_bp = Blueprint("coins", __name__, url_prefix="coins")
 
 # COINS
+
+class CreateCoinRequest(BaseModel):
+  name: str
 
 @coins_bp.get("")
 def get_all_coins():
@@ -36,24 +40,22 @@ def get_coin_by_id(id):
 
 @coins_bp.post('')
 def create_coin():
-    data = request.get_json()
-
-    if not data or 'name' not in data:
-        return jsonify({'error': 'Invalid json input'}), 400
-    
     try:
+        data = CreateCoinRequest(**request.get_json())
         new_coin = Coins.create(
             id=uuid.uuid4(),
-            name=data['name'],
+            name=data.name,
         )
         return jsonify({
             'id': new_coin.id,
             'name': new_coin.name,
         }), 201
+    except ValidationError as err:
+        return jsonify(err.errors()), 400
     except peewee.IntegrityError:
         return jsonify({
             'error': "Duplication error",
-            'message': f"{data['name']} already exists"
+            'message': f"{data.name} already exists"
         }), 409
 
 @coins_bp.delete('/<id>')

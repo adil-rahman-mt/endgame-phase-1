@@ -82,6 +82,14 @@ def test_create_duplicate_coin(client):
             'message': "Test coin 1 already exists"
         }
 
+def test_create_coin_with_invalid_name(client):
+    invalid_name = 100
+    response = client.post("/api/v1/coins", json={"name": invalid_name})
+
+    assert response.status_code == 400
+    assert response.get_json()[0]["input"] == invalid_name
+    assert response.get_json()[0]["msg"] == "Input should be a valid string"
+
 def test_delete_existing_coin(client):
     post_response = client.post("/api/v1/coins", json={"name": "Test coin 1"})
     coin_id = post_response.get_json()["id"]
