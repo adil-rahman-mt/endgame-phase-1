@@ -153,6 +153,17 @@ def test_update_coin_with_invalid_id(client):
         'message': "The provided ID must be a valid UUID"
     }
 
+def test_update_coin_with_invalid_name(client):
+    post_response = client.post("/api/v1/coins", json={"name": "New test coin"})
+    id_of_new_coin = post_response.get_json()["id"]
+    new_invalid_name = 100
+    patch_response = client.patch(f"/api/v1/coins/{id_of_new_coin}", json={"name": new_invalid_name})
+    client.delete(f"/api/v1/coins/{id_of_new_coin}")
+
+    assert patch_response.status_code == 400
+    assert patch_response.get_json()[0]["input"] == new_invalid_name
+    assert patch_response.get_json()[0]["msg"] == "Input should be a valid string"
+
 # COIN AND DUTY RELATIONSHIPS
 
 def test_get_all_duties_for_coin(coin_duty_fixture):

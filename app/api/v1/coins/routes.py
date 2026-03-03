@@ -11,7 +11,7 @@ coins_bp = Blueprint("coins", __name__, url_prefix="coins")
 
 # COINS
 
-class CreateCoinRequest(BaseModel):
+class CoinRequestModel(BaseModel):
   name: str
 
 @coins_bp.get("")
@@ -41,7 +41,7 @@ def get_coin_by_id(id):
 @coins_bp.post('')
 def create_coin():
     try:
-        data = CreateCoinRequest(**request.get_json())
+        data = CoinRequestModel(**request.get_json())
         new_coin = Coins.create(
             id=uuid.uuid4(),
             name=data.name,
@@ -84,15 +84,17 @@ def delete_coin(id):
 @coins_bp.patch('/<id>')
 def update_coin(id):
     try:
-        data = request.get_json()
+        data = CoinRequestModel(**request.get_json())
         coin = Coins.get(Coins.id == f"{id}")
-        coin.name = data["name"]
+        coin.name = data.name
         coin.save()
         updated_coin = Coins.get(Coins.id == f"{id}")
         return jsonify({
             "id": updated_coin.id,
             "name": updated_coin.name
         }), 200
+    except ValidationError as err:
+        return jsonify(err.errors()), 400
     except peewee.DoesNotExist:
         return jsonify({
             'error': "Database error",
