@@ -15,7 +15,7 @@ app = create_app()
 limiter = Limiter(
     get_remote_address,
     app=app,
-    default_limits=["5 per 30 second"],
+    default_limits=["5 per 10 second"],
     storage_uri=os.environ.get('REDIS_STORAGE_URI'),
     strategy="fixed-window",
 )
