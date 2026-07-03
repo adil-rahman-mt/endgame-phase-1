@@ -57,12 +57,14 @@ def test_create_new_coin(client):
     mock_id = uuid.uuid4()
     mock_coin = {
             "id": str(mock_id),
-            "name": "Mock coin"
+            "name": "Mock coin",
+            "completed": False
         }
 
     mock_model = MagicMock()
     mock_model.id = mock_id
     mock_model.name = "Mock coin"
+    mock_model.completed = False
 
     with patch("app.api.v1.coins.routes.Coins.create", return_value=mock_model):
         response = client.post("/api/v1/coins", json={"name": "Mock coin"})

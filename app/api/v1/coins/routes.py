@@ -5,7 +5,7 @@ from app.models.coin_duties import CoinDuties
 import uuid 
 from peewee import JOIN
 import peewee
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, field_validator
 
 coins_bp = Blueprint("coins", __name__, url_prefix="coins")
 
@@ -13,6 +13,14 @@ coins_bp = Blueprint("coins", __name__, url_prefix="coins")
 
 class CoinRequestModel(BaseModel):
   name: str
+  completed: bool = False
+
+  @field_validator('completed', mode='before')
+  @classmethod
+  def convert_null_to_false(cls, value):  
+        if value is None:
+            return False
+        return value
 
 @coins_bp.get("")
 def get_all_coins():
@@ -41,21 +49,22 @@ def get_coin_by_id(id):
 @coins_bp.post('')
 def create_coin():
     try:
-        data = CoinRequestModel(**request.get_json())
+        data = CoinRequestModel(**request.get_json()).model_dump()
         new_coin = Coins.create(
             id=uuid.uuid4(),
-            name=data.name,
+            **data
         )
         return jsonify({
             'id': new_coin.id,
             'name': new_coin.name,
+            'completed': new_coin.completed,
         }), 201
     except ValidationError as err:
         return jsonify(err.errors()), 400
     except peewee.IntegrityError:
         return jsonify({
             'error': "Duplication error",
-            'message': f"{data.name} already exists"
+            'message': f"{data["name"]} already exists"
         }), 409
 
 @coins_bp.delete('/<id>')
