@@ -11,7 +11,7 @@ coins_bp = Blueprint("coins", __name__, url_prefix="coins")
 
 # COINS
 
-class CoinRequestModel(BaseModel):
+class CoinCreateRequestModel(BaseModel):
   name: str
   completed: bool = False
 
@@ -21,6 +21,10 @@ class CoinRequestModel(BaseModel):
         if value is None:
             return False
         return value
+
+class CoinPatchRequestModel(BaseModel):
+    name: str | None = None       
+    completed: bool | None = None 
 
 @coins_bp.get("")
 def get_all_coins():
@@ -49,7 +53,7 @@ def get_coin_by_id(id):
 @coins_bp.post('')
 def create_coin():
     try:
-        data = CoinRequestModel(**request.get_json()).model_dump()
+        data = CoinCreateRequestModel(**request.get_json()).model_dump()
         new_coin = Coins.create(
             id=uuid.uuid4(),
             **data
@@ -93,14 +97,22 @@ def delete_coin(id):
 @coins_bp.patch('/<id>')
 def update_coin(id):
     try:
-        data = CoinRequestModel(**request.get_json())
+        data = CoinPatchRequestModel(**request.get_json()).model_dump(exclude_unset=True)
         coin = Coins.get(Coins.id == f"{id}")
-        coin.name = data.name
-        coin.save()
+
+        if 'name' in data:
+            coin.name = data["name"]
+            coin.save()
+
+        if 'completed' in data:
+            coin.completed = data["completed"]
+            coin.save()        
+
         updated_coin = Coins.get(Coins.id == f"{id}")
         return jsonify({
             "id": updated_coin.id,
-            "name": updated_coin.name
+            "name": updated_coin.name,
+            "completed": updated_coin.completed
         }), 200
     except ValidationError as err:
         return jsonify(err.errors()), 400
