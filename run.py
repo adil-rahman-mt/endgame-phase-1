@@ -45,6 +45,7 @@ def home():
     """
 
 @app.route("/login", methods=["POST"])
+@limiter.limit("6 per minute")
 def login():
     data = request.json
     username = data.get("username")
