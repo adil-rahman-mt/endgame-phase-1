@@ -57,7 +57,8 @@ def login():
         return jsonify({"msg": "Username and password must be provided"}), 401
     
     if user and bcrypt.check_password_hash(user.password, password):
-        access_token = create_access_token(identity=user.id)
+        additional_claims = {"is_admin": user.is_admin}
+        access_token = create_access_token(identity=user.id, additional_claims=additional_claims)
         return jsonify({'message': 'Login Success', 'access_token': access_token}), 200
     else:
         return jsonify({'message': 'Login Failed'}), 401
