@@ -6,6 +6,8 @@ import uuid
 from peewee import JOIN
 import peewee
 from pydantic import BaseModel, ValidationError, field_validator
+from flask_jwt_extended import get_jwt, jwt_required
+from app.auth import admin_required
 
 coins_bp = Blueprint("coins", __name__, url_prefix="coins")
 
@@ -51,6 +53,7 @@ def get_coin_by_id(id):
         }), 400
 
 @coins_bp.post('')
+@admin_required()
 def create_coin():
     try:
         data = CoinCreateRequestModel(**request.get_json()).model_dump()
@@ -72,6 +75,7 @@ def create_coin():
         }), 409
 
 @coins_bp.delete('/<id>')
+@admin_required()
 def delete_coin(id):
     try:
         coin_to_delete = Coins.get_by_id(id)
@@ -95,12 +99,16 @@ def delete_coin(id):
         }), 400
 
 @coins_bp.patch('/<id>')
+@jwt_required()
 def update_coin(id):
     try:
         data = CoinPatchRequestModel(**request.get_json()).model_dump(exclude_unset=True)
         coin = Coins.get(Coins.id == f"{id}")
 
-        if 'name' in data:
+        if "name" in data:
+            claims = get_jwt()
+            if not claims.get("is_admin"):
+                return jsonify(msg="Only admins can rename coins!"), 403
             coin.name = data["name"]
             coin.save()
 
@@ -152,6 +160,7 @@ def get_all_duties_for_coin(coin_id):
         }), 400
 
 @coins_bp.post('/<coin_id>/duties/<duty_id>')
+@admin_required()
 def add_duty_to_coin(coin_id, duty_id):
     try:
         coin = Coins.get_by_id(coin_id)
@@ -192,6 +201,7 @@ def add_duty_to_coin(coin_id, duty_id):
         }), 400
 
 @coins_bp.delete('/<coin_id>/duties/<duty_id>')
+@admin_required()
 def remove_duty_from_coin(coin_id, duty_id):
     try:
         Coins.get_by_id(coin_id)

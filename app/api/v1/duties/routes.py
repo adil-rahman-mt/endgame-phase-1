@@ -5,6 +5,7 @@ from app.models.ksb_duties import KsbDuties
 from peewee import JOIN
 import uuid 
 import peewee
+from app.auth import admin_required
 
 duties_bp = Blueprint("duties", __name__, url_prefix="duties")
 
@@ -36,6 +37,7 @@ def get_duty_by_id(id):
         }), 400
 
 @duties_bp.post('')
+@admin_required()
 def create_duty():
     data = request.get_json()
 
@@ -60,6 +62,7 @@ def create_duty():
         }), 409
 
 @duties_bp.delete('/<id>')
+@admin_required()
 def delete_duty(id):
     try:
         duty_to_delete = Duties.get_by_id(id)
@@ -84,6 +87,7 @@ def delete_duty(id):
         }), 400
 
 @duties_bp.patch('/<id>')
+@admin_required()
 def update_duty(id):
     try:
         data = request.get_json()
@@ -139,6 +143,7 @@ def get_all_ksb_for_duty(duty_id):
         }), 400
 
 @duties_bp.post('/<duty_id>/ksb/<ksb_id>')
+@admin_required()
 def add_ksb_to_duty(duty_id, ksb_id):
     try:
         duty = Duties.get_by_id(duty_id)
@@ -179,7 +184,8 @@ def add_ksb_to_duty(duty_id, ksb_id):
         }), 400
 
 @duties_bp.delete('/<duty_id>/ksb/<ksb_id>')
-def remove_duty_from_coin(duty_id, ksb_id):
+@admin_required()
+def remove_ksb_from_duty(duty_id, ksb_id):
     try:
         Duties.get_by_id(duty_id)
         duty_name = Duties.get_by_id(duty_id).name
