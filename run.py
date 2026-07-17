@@ -11,6 +11,7 @@ from flask_bcrypt import Bcrypt
 from app.models.users import Users
 import peewee
 import uuid
+from datetime import timedelta
 
 load_dotenv()
 
@@ -21,6 +22,7 @@ app = create_app()
 bcrypt = Bcrypt(app)
 
 app.config["JWT_SECRET_KEY"] = os.getenv("FLASK_JWT_SECRET_KEY")
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=1)
 jwt = JWTManager(app)
 
 CORS(app)
