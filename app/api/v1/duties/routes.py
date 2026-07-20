@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 from app.models.duties import Duties
 from app.models.ksb import KSB
 from app.models.ksb_duties import KsbDuties
-from peewee import JOIN
+from peewee import JOIN, prefetch
 import uuid 
 import peewee
 from app.auth import admin_required
@@ -117,6 +117,38 @@ def update_duty(id):
             'error': "Invalid ID format",
             'message': "The provided ID must be a valid UUID"
         }), 400
+    
+
+@duties_bp.route('/with-ksbs')
+def get_duties_with_ksbs():
+    try:
+        duties_query = Duties.select()
+        ksb_duties_query = (KsbDuties.select(KsbDuties, KSB).join(KSB))
+        duties_with_ksbs = prefetch(duties_query, ksb_duties_query)
+        
+        result = []
+        for duty in duties_with_ksbs:
+            ksb_list = []
+            for item in duty.ksb_duty:
+                ksb_list.append({
+                    "id": str(item.ksb_id.id),
+                    "type": item.ksb_id.type,
+                    "name": item.ksb_id.name,
+                    "description": item.ksb_id.description
+                })
+                
+            result.append({
+                "id": str(duty.id),
+                "name": duty.name,
+                "description": duty.description,
+                "ksbs": ksb_list 
+            })
+            
+        return jsonify(result), 200
+        
+    except Exception as e:
+        print(f"Database error: {str(e)}")
+        return jsonify({"error": "Failed to fetch duties with KSB"}), 500
 
 # DUTY AND KSB RELATIONSHIPS
 
