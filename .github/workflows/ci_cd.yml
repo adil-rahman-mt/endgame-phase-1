@@ -54,7 +54,6 @@ jobs:
             sudo docker run -d --restart unless-stopped \
             -p 5000:5000 \
             -e DB_URL="${{ secrets.DB_URL }}" \
-            -e REDIS_STORAGE_URI="${{ secrets.REDIS_STORAGE_URI }}" \
             --name flask-container \
             flask-img:latest
             

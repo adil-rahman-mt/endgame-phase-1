@@ -16,13 +16,12 @@ from datetime import timedelta
 load_dotenv()
 
 options = {}
-redis_storage = limits.storage.storage_from_string(os.environ.get('REDIS_STORAGE_URI'), **options)
 
 app = create_app()
 bcrypt = Bcrypt(app)
 
 app.config["JWT_SECRET_KEY"] = os.getenv("FLASK_JWT_SECRET_KEY")
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=1)
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=10)
 jwt = JWTManager(app)
 
 CORS(app)
@@ -31,7 +30,6 @@ limiter = Limiter(
     get_remote_address,
     app=app,
     default_limits=["100 per 1 minute"],
-    storage_uri=os.environ.get('REDIS_STORAGE_URI'),
     strategy="fixed-window",
 )
 
