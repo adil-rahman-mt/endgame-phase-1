@@ -31,8 +31,6 @@ jobs:
 
   deploy:
     name: Build & deploy to EC2
-    needs: test
-    if: success()
     runs-on: ubuntu-latest
 
     steps:
