@@ -54,6 +54,7 @@ jobs:
             sudo docker run -d --restart unless-stopped \
             -p 5000:5000 \
             -e DB_URL="${{ secrets.DB_URL }}" \
+            -e FLASK_JWT_SECRET_KEY="${{ secrets.FLASK_JWT_SECRET_KEY }}" \
             --name flask-container \
             flask-img:latest
             
