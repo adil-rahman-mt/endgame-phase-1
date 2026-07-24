@@ -43,7 +43,7 @@ def home():
     <p>Or visit https://github.com/adil-rahman-mt/endgame-phase-1</p>
     """
 
-@app.route("/login", methods=["POST"])
+@app.route("/api/login", methods=["POST"])
 @limiter.limit("6 per minute")
 def login():
     data = request.json
@@ -62,7 +62,7 @@ def login():
     else:
         return jsonify({'message': 'Login Failed'}), 401
 
-@app.route('/register', methods=['POST'])
+@app.route('/api/register', methods=['POST'])
 def register():
 
     data = request.get_json() or {}
