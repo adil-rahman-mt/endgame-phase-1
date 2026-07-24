@@ -47,14 +47,14 @@ jobs:
             cd ~/endgame-phase-1
             git pull origin main
 
-            sudo docker build -t flask-img:latest .
-            sudo docker stop flask-container || true
-            sudo docker rm flask-container || true
+            sudo docker build -t be-img:latest .
+            sudo docker stop be-cont || true
+            sudo docker rm be-cont || true
 
             sudo docker run -d --restart unless-stopped \
             -p 5000:5000 \
             -e DB_URL="${{ secrets.DB_URL }}" \
             -e FLASK_JWT_SECRET_KEY="${{ secrets.FLASK_JWT_SECRET_KEY }}" \
-            --name flask-container \
-            flask-img:latest
+            --name be-cont \
+            be-img:latest
             

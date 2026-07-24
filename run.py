@@ -1,7 +1,6 @@
 from app import create_app
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-import limits.storage
 import os
 from dotenv import load_dotenv
 from flask_cors import CORS
